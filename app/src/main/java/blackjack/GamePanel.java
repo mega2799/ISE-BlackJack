@@ -279,7 +279,7 @@ public class GamePanel extends JPanel implements ActionListener
 		this.table.setNames(this.dealer.getName(), this.player.getName());
         this.table.repaint();
         
-        this.cardsLeft.setText("Deck: " + this.dealer.cardsLeftInPack() + "/" + (this.dealer.CARD_PACKS * CardPack.CARDS_IN_PACK));
+        this.cardsLeft.setText("Deck: " + this.dealer.cardsLeftInPack() + "/" + (this.dealer.CARD_PACKS * CardPack.getTotalCards()));
         
         if (this.player.isBankrupt())
         {
