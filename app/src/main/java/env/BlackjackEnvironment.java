@@ -4,6 +4,11 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
+import com.formdev.flatlaf.FlatLightLaf;
+
 import blackjack.AppWindow;
 import jason.asSyntax.Literal;
 import jason.asSyntax.NumberTerm;
@@ -28,6 +33,7 @@ public class BlackjackEnvironment extends Environment {
         super.init(args);
 		logger.info("Inizializzazione in corso...");
 		logger.info(Arrays.toString(args));
+        this.beatufiySwing();           
         this.appWindow = new AppWindow(args.length > 0 ? Double.parseDouble(args[0]) : 1000);
         // Imposta la credenza iniziale della mano a 0
 		//! Da controllare che sia fattibile....
@@ -39,6 +45,22 @@ public class BlackjackEnvironment extends Environment {
         //     e.printStackTrace();
         // }
         logger.info("Inizializzazione completata.");
+    }
+
+    private void beatufiySwing() {
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (final UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+
+
+
+        UIManager.put("Button.arc", 999);                       // bottoni rotondi
+        UIManager.put("Button.background", "#E0E0E0");            // colore di sfondo
+        UIManager.put("Button.foreground", "#333333");            // colore del testo
+        UIManager.put("Button.font", new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
+        UIManager.put("Button.focusWidth", 0);
     }
 
     @Override

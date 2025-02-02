@@ -19,7 +19,7 @@ public class Blackjack
 
 
 
-             UIManager.put("Button.arc", 999);                       // bottoni rotondi
+            UIManager.put("Button.arc", 999);                       // bottoni rotondi
             UIManager.put("Button.background", "#E0E0E0");            // colore di sfondo
             UIManager.put("Button.foreground", "#333333");            // colore del testo
             UIManager.put("Button.font", new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
