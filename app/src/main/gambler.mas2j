@@ -5,7 +5,7 @@ MAS gambler {
 	environment: env.BlackjackEnvironment //(10, 10, 0) // 1% prob. of sliding
 
 	agents: // which agents partecipates the MAS?
-		gambler;
+		gambler gambler;
 
 	aslSourcePath: // where to find agents' source code
 		"src/main/asl";
