@@ -23,6 +23,13 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
+
+    // https://mvnrepository.com/artifact/com.formdev/flatlaf
+    // runtimeOnly("com.formdev:flatlaf:2.6")
+
+    implementation("com.formdev:flatlaf:2.6")
+
+
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

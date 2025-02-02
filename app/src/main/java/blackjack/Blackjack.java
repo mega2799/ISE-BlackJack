@@ -2,8 +2,10 @@
 // jar -cfvm Blackjack.jar Blackjack.mf *.class card_images Cards/*.class Players/*.class
 package blackjack;
 
-
 import javax.swing.UIManager;
+
+import com.formdev.flatlaf.FlatLightLaf;
+
 
 public class Blackjack
 {
@@ -11,7 +13,9 @@ public class Blackjack
     {
         try
         {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // UIManager.setLookAndFeel(new FlatLightLaf());
+            UIManager.setLookAndFeel(new FlatLightLaf());
         }
         catch (final Exception e)
         {
