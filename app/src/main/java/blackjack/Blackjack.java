@@ -16,6 +16,15 @@ public class Blackjack
             // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             // UIManager.setLookAndFeel(new FlatLightLaf());
             UIManager.setLookAndFeel(new FlatLightLaf());
+
+
+
+             UIManager.put("Button.arc", 999);                       // bottoni rotondi
+            UIManager.put("Button.background", "#E0E0E0");            // colore di sfondo
+            UIManager.put("Button.foreground", "#333333");            // colore del testo
+            UIManager.put("Button.font", new java.awt.Font("SansSerif", java.awt.Font.BOLD, 14));
+            UIManager.put("Button.focusWidth", 0);                    // rimuove il bordo focus
+            // Puoi aggiungere ulteriori proprietà di FlatLaf per altri componenti se vuoi.
         }
         catch (final Exception e)
         {
@@ -35,6 +44,10 @@ public class Blackjack
         
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         
-        final AppWindow window = new AppWindow();      
+        // final AppWindow window = new AppWindow();      
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            final AppWindow window = new AppWindow();  // Supponendo che AppWindow sia la tua finestra principale
+            window.setVisible(true);
+        });
     }
 }
