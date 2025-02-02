@@ -92,8 +92,8 @@ public class GamePanel extends JPanel {
         this.add(bottomItems, BorderLayout.SOUTH);
 
         // Imposta uno stile di font per bottoni ed etichette
-        final Font buttonFont = new Font("SansSerif", Font.BOLD, 14);
-        final Font labelFont = new Font("SansSerif", Font.PLAIN, 16);
+        final Font buttonFont = new Font("Arial", Font.BOLD, 14);
+        final Font labelFont = new Font("Arial", Font.PLAIN, 16);
         for (final JButton btn : new JButton[]{this.newGameButton, this.hitButton, this.doubleButton, this.standButton, 
                                          this.add1Chip, this.add5Chip, this.add10Chip, this.add25Chip, this.add100Chip, this.clearBet}) {
             btn.setFont(buttonFont);
