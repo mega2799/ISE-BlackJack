@@ -1,6 +1,5 @@
-// File: blackjack.asl
 
-// Inizialmente l'agente parte con il goal !playRound
-// initially {
-//     !playRound.
-// }
+!bet.
+
++!bet : true <-
+    .print("Blackjack Agent: Puntata piazzata.").

@@ -1,20 +1,34 @@
 package env;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import blackjack.AppWindow;
+import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
 
 public class BlackjackEnvironment extends Environment {
 
+    // action literals
+    public static final Literal bet = Literal.parseLiteral("bet");
+    // public static final Literal coldAir = Literal.parseLiteral("spray_air(cold)");
+
+
+
     // Variabile interna per simulare il valore della mano
     private int handValue = 0;
+
+    static final Logger logger = Logger.getLogger(BlackjackEnvironment.class.getName());
+    private AppWindow appWindow;
 
     @Override
     public void init(final String[] args) {
         super.init(args);
-		System.out.println("Environment: Inizializzazione in corso...");
-		System.out.println(Arrays.toString(args));
+		logger.info("Environment: Inizializzazione in corso...");
+		logger.info(Arrays.toString(args));
+        this.appWindow = new AppWindow();
         // Imposta la credenza iniziale della mano a 0
 		//! Da controllare che sia fattibile....
         // try {
@@ -23,31 +37,31 @@ public class BlackjackEnvironment extends Environment {
         // } catch (final Exception e) {
         //     e.printStackTrace();
         // }
-        System.out.println("Environment: Inizializzazione completata.");
+        logger.info("Environment: Inizializzazione completata.");
     }
 
     @Override
     public boolean executeAction(final String agName, final Structure action) {
         final String act = action.getFunctor();
-        System.out.println("Environment: Agente " + agName + " esegue l'azione: " + act);
+        logger.log(Level.INFO, "Environment: Agente {0} esegue l''azione: {1}", new Object[]{agName, act});
         
         if (null == act) {
-            System.out.println("Environment: Azione non riconosciuta: " + act);
+            logger.log(Level.INFO, "Environment: Azione non riconosciuta: {0}", act);
             return false;
         }
         else switch (act) {
             case "bet":
                 // Simula il piazzamento della puntata
-                System.out.println("Environment: Puntata piazzata dall'agente " + agName + ".");
+                logger.log(Level.INFO, "Environment: Puntata piazzata dall''agente {0}.", agName);
                 // Qui puoi integrare la logica di interazione con il tuo SW di blackjack.
                 return true;
             case "askCard":
                 // Simula la richiesta di una carta
-                System.out.println("Environment: L'agente " + agName + " richiede una carta.");
+                logger.log(Level.INFO, "Environment: L''agente {0} richiede una carta.", agName);
                 // In una versione reale, qui potresti interfacciarti con il tuo motore di gioco per pescare una carta.
                 final int cardValue = this.drawCard();
                 this.handValue += cardValue;
-                System.out.println("Environment: Carta pescata con valore " + cardValue + ". Nuovo handValue = " + this.handValue);
+                logger.log(Level.INFO, "{0}Environment: Carta pescata con valore . Nuovo handValue = {1}", new Object[]{cardValue, this.handValue});
                 
                 // Aggiorna la credenza handValue dell'agente:
 				//! Da controllare che sia fattibile....
@@ -62,10 +76,10 @@ public class BlackjackEnvironment extends Environment {
                 return true;
             case "updateHandValue":
                 // In questo esempio, l'aggiornamento viene già gestito in askCard.
-                System.out.println("Environment: L'aggiornamento del valore della mano è già stato effettuato.");
+                logger.info("Environment: L'aggiornamento del valore della mano è già stato effettuato.");
                 return true;
             default:
-                System.out.println("Environment: Azione non riconosciuta: " + act);
+                logger.log(Level.INFO, "Environment: Azione non riconosciuta: {0}", act);
                 return false;
         }
     }
