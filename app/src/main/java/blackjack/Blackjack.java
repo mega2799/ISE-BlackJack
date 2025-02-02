@@ -46,7 +46,7 @@ public class Blackjack
         
         // final AppWindow window = new AppWindow();      
         javax.swing.SwingUtilities.invokeLater(() -> {
-            final AppWindow window = new AppWindow();  // Supponendo che AppWindow sia la tua finestra principale
+            final AppWindow window = new AppWindow(100.00);  // Supponendo che AppWindow sia la tua finestra principale
             window.setVisible(true);
         });
     }

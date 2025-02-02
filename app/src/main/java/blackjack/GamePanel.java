@@ -47,7 +47,7 @@ public class GamePanel extends JPanel {
     private final JLabel cardsLeft = new JLabel("Cards left...");
     private final JLabel dealerSays = new JLabel("Dealer says...");
 
-    public GamePanel() {
+    public GamePanel(final double walletAmount) {
         // Imposta layout principale
         this.setLayout(new BorderLayout());
         this.setBackground(new Color(6, 120, 0)); // Se desideri cambiare lo sfondo, puoi farlo qui
@@ -120,7 +120,7 @@ public class GamePanel extends JPanel {
         // Inizializza dealer e player
         this.dealer = new Dealer();
         this.player = new Player("James Bond", 32, "Male");
-        this.player.setWallet(100.00);
+        this.player.setWallet(walletAmount);
 
         // Aggiungi i listener tramite lambda expressions
         this.newGameButton.addActionListener(e -> {

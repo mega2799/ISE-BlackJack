@@ -1,9 +1,20 @@
 package blackjack;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
-import java.awt.event.*;
+import javax.swing.JColorChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 
 
 /**
@@ -24,7 +35,7 @@ public class AppWindow extends JFrame
     final int WIDTH = 600;
     final int HEIGHT = 500;
 
-	public AppWindow()
+	public AppWindow(final double walletAmount)
     {
         super("Blackjack");
         
@@ -144,7 +155,7 @@ public class AppWindow extends JFrame
         twentyFiveChip.addActionListener(this);
         hundredChip.addActionListener(this);
         		
-        this.gamePanel = new GamePanel();
+        this.gamePanel = new GamePanel(walletAmount);
         this.gamePanel.setBackground(this.defaultTableColour);
 		this.add(this.gamePanel);
         

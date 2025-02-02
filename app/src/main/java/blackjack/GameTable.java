@@ -133,7 +133,7 @@ public class GameTable extends JPanel {
                     g2d.drawImage(this.cardImages[topCard.getCode() - 1], xPos, this.DEALER_POSITION, this);
                 } catch (final Exception e) {
                     // Gestione dell'assenza di carte
-                    System.out.println("Nessuna carta ancora distribuita per il dealer.");
+                    // System.out.println("Nessuna carta ancora distribuita per il dealer.");
                 }
                 g2d.drawString("?",
                                xPos + this.CARD_IMAGE_WIDTH + this.CARD_INCREMENT,

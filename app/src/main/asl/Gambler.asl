@@ -10,8 +10,12 @@
 
 !start_play.
 
+
++fresca(X) <- .print("Received fresca: ", X).
+
 +!start_play: true <-
     .print("Blackjack Agent: Inizio partita.");
+    // .print(fresca.)
     bet(10).
 
 // !bet.

@@ -28,9 +28,10 @@ public class BlackjackEnvironment extends Environment {
         super.init(args);
 		logger.info("Inizializzazione in corso...");
 		logger.info(Arrays.toString(args));
-        this.appWindow = new AppWindow();
+        this.appWindow = new AppWindow(args.length > 0 ? Double.parseDouble(args[0]) : 1000);
         // Imposta la credenza iniziale della mano a 0
 		//! Da controllare che sia fattibile....
+        this.addPercept(Literal.parseLiteral("fresca(69)"));
         // try {
         //     // Nota: in un contesto reale potresti voler gestire diversamente l'aggiunta delle credenze iniziali.
         //     getAg().addInitialBelief(Literal.parseLiteral("handValue(0)"));
