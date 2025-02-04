@@ -10,6 +10,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
+import blackjack.GameCommand;
 import jason.asSyntax.Literal;
 import jason.asSyntax.NumberTerm;
 import jason.asSyntax.Structure;
@@ -82,15 +83,13 @@ public class BlackjackEnvironment extends Environment {
         }
         else switch (act) {
             case "bet":
-                // // Simula il piazzamento della puntata
-                logger.log(Level.INFO, "Puntata piazzata dall''agente " + agName);
-                // // Qui puoi integrare la logica di interazione con il tuo SW di blackjack.
-                // return true;
                  if (action.getArity() == 1) {
                     try {
                         final NumberTerm betAmountTerm = (NumberTerm) action.getTerm(0);
                         // currentBet = (int) betAmountTerm.solve();
                         logger.log(Level.INFO, "L'agente " + agName +" ha piazzato una puntata di " +  betAmountTerm);
+                        final GameCommand betCommand = GameCommand.parseBet(Integer.parseInt(betAmountTerm.toString()));
+                        this.appWindow.actionPerformed(betCommand);
                         return true;
                     } catch (final Exception e) {
                         logger.log(Level.WARNING, "Errore nell'interpretare l'importo della puntata.", e);

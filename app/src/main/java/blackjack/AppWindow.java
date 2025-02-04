@@ -162,74 +162,66 @@ public class AppWindow extends JFrame
         this.setVisible(true);
     }
 
+    @Override
 	public void actionPerformed(final ActionEvent evt)
-    {
+    {   
         final String act = evt.getActionCommand();
-        
-        if ("$1".equals(act))
-        {
-            this.gamePanel.increaseBet(1);
-        }
-        else if ("$5".equals(act))
-        {
-            this.gamePanel.increaseBet(5);
-        }
-        else if ("$10".equals(act))
-        {
-            this.gamePanel.increaseBet(10);
-        }
-        else if ("$25".equals(act))
-        {
-            this.gamePanel.increaseBet(25);
-        }
-        else if ("$100".equals(act))
-        {
-            this.gamePanel.increaseBet(100);
-        }
-        else if ("Deal".equals(act))
-        {
-            this.gamePanel.newGame();
-        }
-        else if ("Hit".equals(act))
-        {
-            this.gamePanel.hit();
-        }
-        else if ("Double".equals(act))
-        {
-            this.gamePanel.playDouble();
-        }
-        else if ("Stand".equals(act))
-        {
-            this.gamePanel.stand();
-        }
-        else if ("Update Player Details".equals(act))
-        {
-            this.gamePanel.updatePlayer();
-        }
-        else if ("Save Current Player".equals(act))
-        {
-            this.gamePanel.savePlayer();
-        }
-        else if ("Open Existing Player".equals(act))
-        {
-            this.gamePanel.openPlayer();
-        }
-		else if ("Change Table Colour".equals(act))
-		{
-		    final Color tableColour = JColorChooser.showDialog(this, "Select Table Colour", this.defaultTableColour);
-		    this.setBackground(tableColour);
-		    this.gamePanel.setBackground(tableColour);
-		    this.gamePanel.repaint();
-		    this.repaint();
-		}
-		else if ("About Blackjack".equals(act))
-		{
-		    final String aboutText = "<html><p align=\"center\" style=\"padding-bottom: 10px;\">Written by David Winter &copy; 2006<br>Version 1.0</p><p align=\"center\" style=\"padding-bottom: 10px;\"><small>Become such an expert while developing this, <br>I won $1000 online in a game of Blackjack!</small></p><p align=\"center\">email: djw@davidwinter.me.uk<br>web: davidwinter.me.uk</p></html>";
-		    JOptionPane.showMessageDialog(this, aboutText, "About Blackjack", JOptionPane.PLAIN_MESSAGE);
-		}
-		
-		this.gamePanel.updateValues();
+        final GameCommand command = GameCommand.fromString(act);
+
+        this.switchCommand(command);
 	}
+
+    private void switchCommand(final GameCommand command) {
+        if (command != GameCommand.UNKNOWN) {
+            switch (command) {
+                case BET_1 ->
+                    this.gamePanel.increaseBet(1);
+                case BET_5 ->
+                    this.gamePanel.increaseBet(5);
+                case BET_10 ->
+                    this.gamePanel.increaseBet(10);
+                case BET_25 ->
+                    this.gamePanel.increaseBet(25);
+                case BET_100 ->
+                    this.gamePanel.increaseBet(100);
+                case DEAL ->
+                    this.gamePanel.newGame();
+                case HIT ->
+                    this.gamePanel.hit();
+                case DOUBLE ->
+                    this.gamePanel.playDouble();
+                case STAND ->
+                    this.gamePanel.stand();
+                case UPDATE_PLAYER ->
+                    this.gamePanel.updatePlayer();
+                case SAVE_PLAYER ->
+                    this.gamePanel.savePlayer();
+                case OPEN_PLAYER ->
+                    this.gamePanel.openPlayer();
+                case CHANGE_TABLE_COLOUR -> {
+                    final Color tableColour = JColorChooser.showDialog(this, "Select Table Colour", this.defaultTableColour);
+                    this.setBackground(tableColour);
+                    this.gamePanel.setBackground(tableColour);
+                    this.gamePanel.repaint();
+                    this.repaint();
+                }
+                case ABOUT_BLACKJACK -> {
+                    final String aboutText = "<html><p align=\"center\" style=\"padding-bottom: 10px;\">Written by David Winter &copy; 2006<br>Version 1.0</p><p align=\"center\" style=\"padding-bottom: 10px;\"><small>Become such an expert while developing this, <br>I won $1000 online in a game of Blackjack!</small></p><p align=\"center\">email: djw@davidwinter.me.uk<br>web: davidwinter.me.uk</p></html>";
+                    JOptionPane.showMessageDialog(this, aboutText, "About Blackjack", JOptionPane.PLAIN_MESSAGE);
+                }
+                default -> {
+                }
+            }
+            this.gamePanel.updateValues();
+        }
+    }
+
+	public void actionPerformed(final GameCommand command)
+    {   
+        this.switchCommand(command);
+
+	}
+
 	
 	public void componentResized(final ComponentEvent e)
 	{

@@ -16,6 +16,10 @@
 +!start_play: true <-
     .print("Blackjack Agent: Inizio partita.");
     // .print(fresca.)
-    bet(10).
+    bet(10);
+    bet(1);
+    bet(5);
+    bet(100);
+    bet(25).
 
 // !bet.
