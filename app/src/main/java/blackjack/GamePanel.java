@@ -27,7 +27,19 @@ public class GamePanel extends JPanel {
     private final Dealer dealer;
     private Player player;
 
+    public Dealer getDealer() {
+        return this.dealer;
+    }
+
+    public Player getPlayer() {
+        return this.player;
+    }
+
     private final GameTable table;
+
+    public GameTable getTable() {
+        return this.table;
+    }
 
     // Bottoni per il gioco
     private final JButton newGameButton = new JButton("Deal");

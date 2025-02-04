@@ -7,19 +7,26 @@
 //     bet.
 //     .send(environment, tell, bet(N)).
 
++hand_value(0).
 
 !start_play.
 
++hand_value(V) : V < 17 <- 
+    .print("Blackjack Agent: La mia mano ha valore ", V);
+    !ask_card. 
 
-+fresca(X) <- .print("Received fresca: ", X).
++hand_value(V) : V >= 17 <- 
+    .print("Blackjack Agent: Ho vinto io skyler", V);
+    stand.
+    // -hand_value(V);
+    // !start_play.
 
 +!start_play: true <-
     .print("Blackjack Agent: Inizio partita.");
-    // .print(fresca.)
     bet(10);
-    bet(1);
-    bet(5);
-    bet(100);
-    bet(25).
+    deal;
+    check_hand_value.
 
-// !bet.
++!ask_card: true <-
+    .print("Blackjack Agent: Chiedo una carta.");
+    askCard.

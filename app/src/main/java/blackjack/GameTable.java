@@ -21,6 +21,14 @@ public class GameTable extends JPanel {
     private DealerCardHand dealer;
     private PlayerCardHand player;
     
+    public DealerCardHand getDealerHand() {
+        return this.dealer;
+    }
+
+    public PlayerCardHand getPlayerHand() {
+        return this.player;
+    }
+
     private boolean showAllDealerCards;
     
     // drawing position vars

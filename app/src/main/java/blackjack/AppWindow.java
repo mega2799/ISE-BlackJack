@@ -27,6 +27,9 @@ public class AppWindow extends JFrame
     implements ActionListener, ComponentListener
 {
     private final GamePanel gamePanel;
+    public GamePanel getGamePanel() {
+        return this.gamePanel;
+    }
     private final Color defaultTableColour = new Color(6, 120, 0);
     
     private final JMenuItem savePlayer = new JMenuItem("Save Current Player");

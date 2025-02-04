@@ -11,6 +11,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
 import blackjack.GameCommand;
+import blackjack.GamePanel;
 import jason.asSyntax.Literal;
 import jason.asSyntax.NumberTerm;
 import jason.asSyntax.Structure;
@@ -18,16 +19,12 @@ import jason.environment.Environment;
 
 public class BlackjackEnvironment extends Environment {
 
-    // action literals
     public static final Literal bet = Literal.parseLiteral("bet(_)");
 
 
-
-    // Variabile interna per simulare il valore della mano
-    private int handValue = 0;
-
     static final Logger logger = Logger.getLogger(BlackjackEnvironment.class.getName());
     private AppWindow appWindow;
+    private GamePanel gamePanel;
 
     @Override
     public void init(final String[] args) {
@@ -36,9 +33,8 @@ public class BlackjackEnvironment extends Environment {
 		logger.info(Arrays.toString(args));
         this.beatufiySwing();           
         this.appWindow = new AppWindow(args.length > 0 ? Double.parseDouble(args[0]) : 1000);
-        // Imposta la credenza iniziale della mano a 0
+        this.gamePanel = this.appWindow.getGamePanel();
 		//! Da controllare che sia fattibile....
-        this.addPercept(Literal.parseLiteral("fresca(69)"));
         // try {
         //     // Nota: in un contesto reale potresti voler gestire diversamente l'aggiunta delle credenze iniziali.
         //     getAg().addInitialBelief(Literal.parseLiteral("handValue(0)"));
@@ -48,13 +44,13 @@ public class BlackjackEnvironment extends Environment {
         logger.info("Inizializzazione completata.");
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private void beatufiySwing() {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (final UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-
 
 
         UIManager.put("Button.arc", 999);                       // bottoni rotondi
@@ -99,45 +95,29 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.WARNING, "L'azione bet richiede un parametro (importo della puntata).");
                     return false;
                 }
-
+            
+            case "deal":
+                logger.log(Level.INFO, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
+                this.appWindow.actionPerformed(GameCommand.DEAL);
+                return true;
+            case "check_hand_value":
+                logger.log(Level.INFO, "L'agente " + agName + " ha richiesto il valore della mano.");
+                // Invia all'agente il valore della mano
+                this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                return true;
             case "askCard":
                 // Simula la richiesta di una carta
-                logger.log(Level.INFO, "L''agente " + agName + "richiede una carta.");
-                // In una versione reale, qui potresti interfacciarti con il tuo motore di gioco per pescare una carta.
-                final int cardValue = this.drawCard();
-                this.handValue += cardValue;
-                logger.log(Level.INFO, "Carta pescata con valore . Nuovo handValue = {1}", new Object[]{cardValue, this.handValue});
-                
-                // Aggiorna la credenza handValue dell'agente:
-				//! Da controllare che sia fattibile....
-                // try {
-                //     // Rimuovi ogni valore precedente della mano (semplice gestione: rimuoviamo tutte le occorrenze di "handValue(...)")
-                //     removeBelief("handValue(_)");
-                //     // Aggiungi il nuovo valore della mano
-                //     addBelief(Literal.parseLiteral("handValue(" + this.handValue + ")"));
-                // } catch (final Exception e) {
-                //     e.printStackTrace();
-                // }
+                logger.log(Level.INFO, "L'agente " + agName + "richiede una carta.");
+                this.appWindow.actionPerformed(GameCommand.HIT);
+                this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
                 return true;
-            case "updateHandValue":
-                // In questo esempio, l'aggiornamento viene già gestito in askCard.
-                logger.info("L'aggiornamento del valore della mano è già stato effettuato.");
+            case "stand":
+                logger.log(Level.INFO, "L'agente " + agName + " ha deciso di stare.");
+                this.appWindow.actionPerformed(GameCommand.STAND);
                 return true;
             default:
                 logger.log(Level.INFO, "Azione non riconosciuta: " + act);
                 return false;
         }
-    }
-
-    //TODO delete this
-    /**
-     * Metodo fittizio per simulare il pescare una carta.
-     * Qui restituisce un valore costante oppure potrebbe generare un valore casuale.
-     */
-    private int drawCard() {
-        // Per semplicità, restituisce sempre un valore che porta la mano a 21 se possibile.
-        // In una logica reale, potresti calcolare un valore randomico o seguire regole specifiche.
-        final int cardValue = (this.handValue < 21) ? Math.min(10, 21 - this.handValue) : 0;
-        return cardValue;
     }
 }
