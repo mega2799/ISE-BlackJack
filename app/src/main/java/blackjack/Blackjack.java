@@ -19,7 +19,7 @@ public class Blackjack
 
 
 
-             UIManager.put("Button.arc", 999);                       // bottoni rotondi
+            UIManager.put("Button.arc", 999);                       // bottoni rotondi
             UIManager.put("Button.background", "#E0E0E0");            // colore di sfondo
             UIManager.put("Button.foreground", "#333333");            // colore del testo
             UIManager.put("Button.font", new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
@@ -46,7 +46,7 @@ public class Blackjack
         
         // final AppWindow window = new AppWindow();      
         javax.swing.SwingUtilities.invokeLater(() -> {
-            final AppWindow window = new AppWindow();  // Supponendo che AppWindow sia la tua finestra principale
+            final AppWindow window = new AppWindow(100.00);  // Supponendo che AppWindow sia la tua finestra principale
             window.setVisible(true);
         });
     }
