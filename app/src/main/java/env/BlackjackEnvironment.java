@@ -102,13 +102,24 @@ public class BlackjackEnvironment extends Environment {
                 return true;
             case "check_hand_value":
                 logger.log(Level.INFO, "L'agente " + agName + " ha richiesto il valore della mano.");
+                logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
                 // Invia all'agente il valore della mano
-                this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                logger.log(Level.INFO,
+                        "Il giocatore e\' fottuto?: " + this.gamePanel.getPlayer().hand.isBust());  
+                if (!this.gamePanel.getPlayer().hand.isBust()) {
+                    this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                } else {
+                    
+                }
                 return true;
             case "askCard":
                 // Simula la richiesta di una carta
                 logger.log(Level.INFO, "L'agente " + agName + "richiede una carta.");
                 this.appWindow.actionPerformed(GameCommand.HIT);
+                logger.log(Level.INFO,
+                        "Aggiungo il nuovo valore della mano" + this.gamePanel.getPlayer().hand.getTotal());  
+                logger.log(Level.INFO,
+                        "Il giocatore e\' fottuto?: " + this.gamePanel.getPlayer().hand.isBust());  
                 this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
                 return true;
             case "stand":
