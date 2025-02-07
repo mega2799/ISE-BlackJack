@@ -1,0 +1,12 @@
+MAS gambler {
+
+	infrastructure: Centralised // no distribution, the whole MAS runs in the same host
+
+	environment: env.BlackjackEnvironment(69.90) // 1% prob. of sliding
+
+	agents:
+		gamblerhilo gamblerhilo ;
+
+	aslSourcePath:
+		"src/main/asl";
+}

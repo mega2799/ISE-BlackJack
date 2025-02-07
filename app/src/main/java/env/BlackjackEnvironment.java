@@ -3,6 +3,7 @@ package env;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -10,10 +11,14 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
+import blackjack.Cards.Card;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
+import jason.asSyntax.ListTerm;
+import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
 import jason.asSyntax.NumberTerm;
+import jason.asSyntax.NumberTermImpl;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
 
@@ -97,11 +102,21 @@ public class BlackjackEnvironment extends Environment {
                 case "deal":
                     logger.log(Level.INFO, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
                     this.appWindow.actionPerformed(GameCommand.DEAL);
+                    final ListTerm cardList = new ListTermImpl();
+                    for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue).collect(Collectors.toList())) {
+                        cardList.add(new NumberTermImpl(card));
+                    }
+                    logger.log(Level.INFO, "Le cart della prima mano sono: " + cardList.toString());
+                    // logger.log(Level.INFO, "Le cart della prima mano sono: " + this.gamePanel.getPlayer().hand.for);
+                    // this.gamePanel.getPlayer().hand.forEach(card -> {
+                    //     logger.log(Level.INFO, "Carta: " + card.getValue());
+                    // this.addPercept(agName, Literal.parseLiteral("card_seen(" + card.getValue() + ")"));
+                    // });
+                    this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString()  + ")"));
                     return true;
                 case "check_hand_value":
                     logger.log(Level.INFO, "L'agente " + agName + " ha richiesto il valore della mano.");
                     logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
-                    // Invia all'agente il valore della mano
                     logger.log(Level.INFO,
                             "Il giocatore e\' stato sconfitto dopo il check_hand_value?: " + this.gamePanel.getPlayer().hand.isBust());
                     logger.log(Level.INFO,
@@ -116,11 +131,20 @@ public class BlackjackEnvironment extends Environment {
                     }
                     return true;
                 case "askCard":
-                    // Simula la richiesta di una carta
                     logger.log(Level.INFO, "L'agente " + agName + " richiede una carta.");
                     logger.log(Level.INFO,
                             "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
+                    System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo") );
+                    if (agName.indexOf("hilo") > 1) {
+                        logger.log(Level.INFO, "L'agente " + agName + " e\' un hilo.");
+                        final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
+                        this.appWindow.actionPerformed(GameCommand.HIT);
+                        final int afterScore = this.gamePanel.getPlayer().hand.getTotal();
+                        final int diff = afterScore - beforeScore;
+                        logger.log(Level.INFO, "Il sistema inserisce val: " + "card_seen(" + diff + ")");
+                    } else {
                     this.appWindow.actionPerformed(GameCommand.HIT);
+                    }
                     logger.log(Level.INFO,
                             "Aggiungo il nuovo valore della mano" + this.gamePanel.getPlayer().hand.getTotal());
                     logger.log(Level.INFO,
