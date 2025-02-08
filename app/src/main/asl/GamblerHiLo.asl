@@ -3,6 +3,14 @@
 // Beliefs iniziali
 card_count(0).  // Iniziamo con un conteggio di 0
 
++debug_mode(on).
+
+
++!debug_print(Msg) : debug_mode(on) <- 
+    .print(" => ", Msg).
+
+
+
 
 // +total_hand_value(V) :- .my_hand(V).
 
@@ -22,6 +30,8 @@ card_count(0).  // Iniziamo con un conteggio di 0
 //     -card_count(C);
 //     +card_count(NewCount). // Aggiorna il belief concorrentemente
 
++!tick <- 
+    .wait(2000).
 
 +cards_seen(List) <- update_counts(List).
 
@@ -71,7 +81,8 @@ card_count(0).  // Iniziamo con un conteggio di 0
     .print("Blackjack Agent: Punto: ", Bet).
     // !bet(Bet).
 
-
++? decide_bet <- 
+    .print("Failure????").
 //stupid gambler here....
 +hand_value(0).
 
@@ -85,18 +96,16 @@ card_count(0).  // Iniziamo con un conteggio di 0
     .print("Blackjack Agent: Ho vinto io skyler ", V);
     stand;
     .print("Blackjack Agent: Resetto la partita...");
-    // -hand_value(V);
     +hand_value(0);
-    .wait(1000);
+    !tick;
     !start_play.
 
 +hand_value(V) : V == 21 <- 
     .print("Blackjack Agent: BlackJack!!! ", V);
     stand;
     .print("Blackjack Agent: Resetto la partita...");
-    // -hand_value(V);
     +hand_value(0);
-    .wait(1000);
+    !tick;
     !start_play.
 
 +hand_value(V) : V > 21 <- 
@@ -104,20 +113,20 @@ card_count(0).  // Iniziamo con un conteggio di 0
     .print("Blackjack Agent: Resetto la partita...");
     // -hand_value(V);
     +hand_value(0);
-    .wait(1000);
+    !tick;
     .print("Blackjack Agent: ###################### Done ######################");
     !start_play.
 
 +!start_play: true <-
     .print("Blackjack Agent: Inizio partita.");
     bet(10);
-    decide_bet;
-    .wait(1000);
-    deal.
-    // .wait(1000);
-    // check_hand_value.
+    !decide_bet;
+    !tick;
+    deal;
+    !tick;
+    check_hand_value.
 
 +!ask_card: true <-
-    .wait(1000);
+    !tick;
     .print("Blackjack Agent: Chiedo una carta.");
     askCard.

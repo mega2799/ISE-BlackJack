@@ -102,17 +102,17 @@ public class BlackjackEnvironment extends Environment {
                 case "deal":
                     logger.log(Level.INFO, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
                     this.appWindow.actionPerformed(GameCommand.DEAL);
-                    final ListTerm cardList = new ListTermImpl();
-                    for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue).collect(Collectors.toList())) {
-                        cardList.add(new NumberTermImpl(card));
+
+                    if (agName.indexOf("hilo") > 1) {
+                        // aggiungo i valori delle mie carte al conteggio
+                        final ListTerm cardList = new ListTermImpl();
+                        for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
+                                .collect(Collectors.toList())) {
+                            cardList.add(new NumberTermImpl(card));
+                        }
+                        logger.log(Level.INFO, "Le cart della prima mano sono: " + cardList.toString());
+                        this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
                     }
-                    logger.log(Level.INFO, "Le cart della prima mano sono: " + cardList.toString());
-                    // logger.log(Level.INFO, "Le cart della prima mano sono: " + this.gamePanel.getPlayer().hand.for);
-                    // this.gamePanel.getPlayer().hand.forEach(card -> {
-                    //     logger.log(Level.INFO, "Carta: " + card.getValue());
-                    // this.addPercept(agName, Literal.parseLiteral("card_seen(" + card.getValue() + ")"));
-                    // });
-                    this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString()  + ")"));
                     return true;
                 case "check_hand_value":
                     logger.log(Level.INFO, "L'agente " + agName + " ha richiesto il valore della mano.");
