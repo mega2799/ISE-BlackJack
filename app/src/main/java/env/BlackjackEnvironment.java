@@ -1,5 +1,7 @@
 package env;
 
+import static env.BlackjackEnvironment.AgentClassifier.HILO;
+
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,10 +13,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
-import blackjack.Cards.Card;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
-import static env.BlackjackEnvironment.AgentClassifier.HILO;
+import blackjack.Cards.Card;
 import jason.asSyntax.ListTerm;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
@@ -140,18 +141,7 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.INFO,
                             "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
                             + this.gamePanel.getDealer().hand.isBust());
-                    this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
-                    if (!this.gamePanel.getPlayer().hand.isBust()) {
-                        logger.log(Level.INFO, "Il sistema inserisce val: " + "hand_value("
-                                + this.gamePanel.getPlayer().hand.getTotal() + ")");
-                        this.addPercept(agName,
-                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
-                    } else {
-                        logger.log(Level.INFO,
-                                "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
-                        this.addPercept(agName,
-                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
-                    }
+                    this.checkIfBusted(agName);
                     return true;
                 case "askCard":
                     logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta.");
@@ -176,18 +166,7 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.INFO,
                             "Il Dealer e\' stato sconfitto dopo ask_card?: "
                             + this.gamePanel.getDealer().hand.isBust());
-                    this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
-                    if (!this.gamePanel.getPlayer().hand.isBust()) {
-                        logger.log(Level.INFO, "Il sistema inserisce val: " + "hand_value("
-                                + this.gamePanel.getPlayer().hand.getTotal() + ")");
-                        this.addPercept(agName,
-                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
-                    } else {
-                        logger.log(Level.INFO,
-                                "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
-                        this.addPercept(agName,
-                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
-                    }
+                    this.checkIfBusted(agName);
                     return true;
                 case "stand":
                     logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
@@ -197,6 +176,19 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.WARNING, "Azione non riconosciuta: " + act);
                     return false;
             }
+        }
+    }
+
+    private void checkIfBusted(final String agName) {
+        this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
+        if (!this.gamePanel.getPlayer().hand.isBust()) {
+            this.addPercept(agName,
+                    Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+        } else {
+            logger.log(Level.INFO,
+                    "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
+            this.addPercept(agName,
+                    Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
         }
     }
 }

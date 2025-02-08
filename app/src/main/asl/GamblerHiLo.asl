@@ -71,7 +71,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !debug_print(["Punto: ", Bet]);
     bet(Bet).
 
-//********************************************************************* Gambler ********************************************************************* */
+//********************************************************************* Gambler hand manage ********************************************************************* */
 
 +hand_value(0).
 
@@ -106,16 +106,18 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !debug_print(["###################### Done ######################"]);
     !start_play.
 
++!ask_card: true <-
+    !tick;
+    !debug_print(["Chiedo una carta."]);
+    askCard.
+
+//********************************************************************* Game manage ********************************************************************* */
+
 +!start_play: true <-
     !debug_print(["Inizio partita."]);
-    // bet(10);
     !decide_bet;
     !tick;
     deal;
     !tick;
     check_hand_value.
 
-+!ask_card: true <-
-    !tick;
-    !debug_print(["Chiedo una carta."]);
-    askCard.
