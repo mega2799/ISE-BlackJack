@@ -48,32 +48,14 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 +update_counts([]) <- !debug_print(["Nessuna carta da aggiornare."]).
 
-+update_counts([H|T]) : H >= 2 & H <= 6 <-
++update_counts([H|T]) <-
     !debug_print(["Aggiorno il conteggio per la carta: ", H]);
     ?card_count(C);
-    NewCount = C + 1;
+    if (H >= 2 & H <= 6) { NewCount = C + 1 };
+    if (H >= 7 & H <= 9) { NewCount = C + 0 };
+    if (H >= 10 | H == 1) { NewCount = C - 1 };
     !debug_print(["Vecchio conteggio: ", C]);
     !debug_print(["Nuovo conteggio: ", NewCount]);
-    -card_count(C);
-    +card_count(NewCount);
-    +update_counts(T).
-
-+update_counts([H|T]) : H >= 10 | H == 1 <-
-    !!debug_print(["Aggiorno il conteggio per la carta: ", H]);
-    ?card_count(C);
-    NewCount = C - 1;
-    !debug_print(["Vecchio conteggio: ", C]);
-    !debug_print(["Nuovo conteggio: ", NewCount]);
-    -card_count(C);
-    +card_count(NewCount);
-    +update_counts(T).
-
-+update_counts([H|T]) : (H >= 7 & H <= 9) <-
-    !debug_print(["Aggiorno il conteggio per la carta: ", H]);
-    ?card_count(C);
-    NewCount = C + 0;
-    !!debug_print(["Vecchio conteggio: ", C]);
-    !!debug_print(["Nuovo conteggio: ", NewCount]);
     -card_count(C);
     +card_count(NewCount);
     +update_counts(T).

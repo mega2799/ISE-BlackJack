@@ -10,7 +10,7 @@ import java.util.Stack;
  */
 public class CardPack extends Stack<Card>
 {
-    private static final int NUM_OF_PACKS = 2;
+    // private static final int NUM_OF_PACKS = 2;
     public static final int CARDS_IN_PACK = 52;
     
     /**
@@ -25,8 +25,8 @@ public class CardPack extends Stack<Card>
         
         int cardCode = 1;
         
-        for (int pack = 0; pack < NUM_OF_PACKS; pack++)
-        {
+        // for (int pack = 0; pack < NUM_OF_PACKS; pack++)
+        // {
             for (final String suit : suits)
             {
                 for (int i = 1; i < 14; i++)
@@ -35,7 +35,7 @@ public class CardPack extends Stack<Card>
                     cardCode = (cardCode + 1) % CARDS_IN_PACK;
                 }
             }
-        }
+        // }
         // for (final String suit : suits)
         // {
         //     for (int i = 1; i < 14; i++)
@@ -47,6 +47,6 @@ public class CardPack extends Stack<Card>
     }
 
     public static int getTotalCards() {
-        return NUM_OF_PACKS * CARDS_IN_PACK;
+        return /*NUM_OF_PACKS * */ CARDS_IN_PACK;
     }
 }
