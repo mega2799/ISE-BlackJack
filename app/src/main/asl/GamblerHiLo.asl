@@ -29,7 +29,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !debug_print_helper(Msg2, T).
 
 +!tick <- 
-    .wait(2000).
+    .wait(200).
 
 +!set_debug(on) <- 
     -debug_mode(_);
@@ -63,13 +63,14 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 // Strategia di puntata basata sul conteggio
 +!decide_bet <-
-    !debug_print(["Decido la puntata....... boh"]);
+    !debug_print(["Decido la puntata......."]);
     ?card_count(C);
-    if ( C > 2 ) { Bet = 100 } 
-    if ( C < -1 ) { Bet = 10 } 
-    else {Bet = 25 };    
-    !debug_print(["Punto: ", Bet]);
-    bet(Bet).
+    !debug_print(["C vale: ", C]);
+    if ( C > 2 ) { !debug_print(["Punto: ", 100]); bet(100) } 
+    if ( C < -1 ) { !debug_print(["Punto: ", 10]); bet(10) } 
+    if ( C <= 2 & C >= -1 ) { !debug_print(["Punto: ", 25]); bet(25)}.
+    // !debug_print(["Punto: ", Bet]);
+    // bet(Bet).
 
 //********************************************************************* Gambler hand manage ********************************************************************* */
 
@@ -77,33 +78,57 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 !start_play.
 
-+hand_value(V) : V < 17 <- 
-    !debug_print(["La mia mano ha valore ", V]);
-    !ask_card. 
+// +hand_value(V) : V < 17 <- 
+//     !debug_print(["La mia mano ha valore ", V]);
+//     !ask_card. 
 
-+hand_value(V) : V >= 17 & V <21 <- 
-    !debug_print(["Ho vinto io skyler ", V]);
-    stand;
-    !debug_print(["Resetto la partita..."]);
+// +hand_value(V) : V >= 17 & V <21 <- 
+//     !debug_print(["Ho vinto io skyler ", V]);
+//     stand;
+//     !debug_print(["Resetto la partita..."]);
+//     +hand_value(0);
+//     !tick;
+//     !start_play.
+
+//TODO inserire qui il punto di controllo nel caso in cui il dealer sia busted e io vinca automaticamente
++hand_value(V) <- 
+    !debug_print(["La mia mano ha valore ", V]);
+    ?card_count(C);
+    !debug_print(["Il mio conteggio: ", C]);
+    !decide_action(V, C).
+
+// chiedo carta soltanto se sicuro prenderla 
++!decide_action(V, C) :  V < (18 - C) <- 
+    !debug_print(["Valore mano: ", V, " | Card Count: ", C, " => Chiedo carta!"]);
+    !ask_card.
+
+// stare al gioco e rischioso quindi mi fermo
++!decide_action(V, C) : V >= (18 - C) & V < 21 <- 
+    !debug_print(["Valore mano: ", V, " | Card Count: ", C, " => Mi fermo!"]);
+    stand; 
+    !debug_print(["###################### Done ######################"]);
+    -hand_value(V);
     +hand_value(0);
     !tick;
     !start_play.
 
-+hand_value(V) : V == 21 <- 
+//Jackpot si incassa
++!decide_action(V, C) : V == 21 <- 
     !debug_print(["BlackJack!!! ", V]);
     stand;
-    !!debug_print(["Resetto la partita..."]);
+    !debug_print(["###################### Done ######################"]);
+    -hand_value(V);
     +hand_value(0);
     !tick;
     !start_play.
 
-+hand_value(V) : V > 21 <- 
+// ho perso
++!decide_action(V, C) : V > 21 <- 
     !debug_print(["Ho perso la fresca"]);
-    !debug_print(["Resetto la partita..."]);
-    // -hand_value(V);
+    !debug_print(["###################### Done ######################"]);
+    -hand_value(V);
     +hand_value(0);
     !tick;
-    !debug_print(["###################### Done ######################"]);
     !start_play.
 
 +!ask_card: true <-

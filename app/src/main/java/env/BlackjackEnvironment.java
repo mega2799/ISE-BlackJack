@@ -149,12 +149,16 @@ public class BlackjackEnvironment extends Environment {
                             "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
                     System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
                     if (HILO.getName().equals(agName)) {
-                        logger.log(Level.INFO, "L'agente " + agName + " e\' un hilo.");
                         final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
+                        logger.log(Level.INFO, "Mano agente: " + agName + " before: " + beforeScore);
                         this.appWindow.actionPerformed(GameCommand.HIT);
                         final int afterScore = this.gamePanel.getPlayer().hand.getTotal();
+                        logger.log(Level.INFO, "Mano agente: " + agName + " after: " + afterScore);
                         final int diff = afterScore - beforeScore;
                         logger.log(Level.INFO, "Il sistema inserisce val: " + "card_seen(" + diff + ")");
+                        final ListTerm cardList = new ListTermImpl();
+                        cardList.add(new NumberTermImpl(diff));
+                        this.addPercept(agName, Literal.parseLiteral("card_seen(" + cardList.toString() + ")"));
                     } else {
                         this.appWindow.actionPerformed(GameCommand.HIT);
                     }
@@ -182,6 +186,7 @@ public class BlackjackEnvironment extends Environment {
     private void checkIfBusted(final String agName) {
         this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
         if (!this.gamePanel.getPlayer().hand.isBust()) {
+            logger.log(Level.INFO, "Il giocatore non ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
             this.addPercept(agName,
                     Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
         } else {
