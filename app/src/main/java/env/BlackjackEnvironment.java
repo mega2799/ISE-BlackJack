@@ -1,5 +1,7 @@
 package env;
 
+import static env.BlackjackEnvironment.AgentClassifier.HILO;
+
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,10 +13,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
-import blackjack.Cards.Card;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
-import static env.BlackjackEnvironment.AgentClassifier.HILO;
+import blackjack.Cards.Card;
 import jason.asSyntax.ListTerm;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
@@ -58,6 +59,7 @@ public class BlackjackEnvironment extends Environment {
         this.gamePanel = this.appWindow.getGamePanel();
         this.addPercept(Literal.parseLiteral("debug_mode(" + (Integer.parseInt(args[1]) == 1 ? "on" : "off") + ")"));
         logger.info("Inizializzazione completata.");
+        logger.setLevel(Level.WARNING);
     }
 
     @SuppressWarnings("CallToPrintStackTrace")
@@ -89,7 +91,7 @@ public class BlackjackEnvironment extends Environment {
         logger.log(Level.INFO, "Azione riconosciuta: " + act);
 
         if (null == act) {
-            logger.log(Level.INFO, "Azione non riconosciuta: {0}", act);
+            logger.log(Level.WARNING, "Azione non riconosciuta: {0}", act);
             return false;
         } else {
             switch (act) {
@@ -114,7 +116,7 @@ public class BlackjackEnvironment extends Environment {
                     }
 
                 case "deal":
-                    logger.log(Level.INFO, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
+                    logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
                     this.appWindow.actionPerformed(GameCommand.DEAL);
 
                     // if (agName.indexOf("hilo") > 1) {
@@ -130,7 +132,7 @@ public class BlackjackEnvironment extends Environment {
                     }
                     return true;
                 case "check_hand_value":
-                    logger.log(Level.INFO, "L'agente " + agName + " ha richiesto il valore della mano.");
+                    logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto il valore della mano.");
                     logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
                     logger.log(Level.INFO,
                             "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
@@ -152,7 +154,7 @@ public class BlackjackEnvironment extends Environment {
                     }
                     return true;
                 case "askCard":
-                    logger.log(Level.INFO, "L'agente " + agName + " richiede una carta.");
+                    logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta.");
                     logger.log(Level.INFO,
                             "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
                     System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
@@ -188,11 +190,11 @@ public class BlackjackEnvironment extends Environment {
                     }
                     return true;
                 case "stand":
-                    logger.log(Level.INFO, "L'agente " + agName + " ha deciso di stare.");
+                    logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
                     this.appWindow.actionPerformed(GameCommand.STAND);
                     return true;
                 default:
-                    logger.log(Level.INFO, "Azione non riconosciuta: " + act);
+                    logger.log(Level.WARNING, "Azione non riconosciuta: " + act);
                     return false;
             }
         }
