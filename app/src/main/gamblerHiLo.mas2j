@@ -2,7 +2,7 @@ MAS gambler {
 
 	infrastructure: Centralised // no distribution, the whole MAS runs in the same host
 
-	environment: env.BlackjackEnvironment(69.90) // 1% prob. of sliding
+	environment: env.BlackjackEnvironment(1000, 1) // (fresca, debug)
 
 	agents:
 		gamblerhilo gamblerhilo ;

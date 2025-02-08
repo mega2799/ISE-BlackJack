@@ -14,6 +14,7 @@ import blackjack.AppWindow;
 import blackjack.Cards.Card;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
+import static env.BlackjackEnvironment.AgentClassifier.HILO;
 import jason.asSyntax.ListTerm;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
@@ -23,6 +24,23 @@ import jason.asSyntax.Structure;
 import jason.environment.Environment;
 
 public class BlackjackEnvironment extends Environment {
+
+    public enum AgentClassifier {
+        HILO("gamblerhilo"),
+        BASIC("gambler"),
+        ADVANCED("bho");
+
+        public final String name;
+
+        AgentClassifier(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+    }
 
     public static final Literal bet = Literal.parseLiteral("bet(_)");
 
@@ -38,13 +56,7 @@ public class BlackjackEnvironment extends Environment {
         this.beatufiySwing();
         this.appWindow = new AppWindow(args.length > 0 ? Double.parseDouble(args[0]) : 1000);
         this.gamePanel = this.appWindow.getGamePanel();
-        //! Da controllare che sia fattibile....
-        // try {
-        //     // Nota: in un contesto reale potresti voler gestire diversamente l'aggiunta delle credenze iniziali.
-        //     getAg().addInitialBelief(Literal.parseLiteral("handValue(0)"));
-        // } catch (final Exception e) {
-        //     e.printStackTrace();
-        // }
+        this.addPercept(Literal.parseLiteral("debug_mode(" + (Integer.parseInt(args[1]) == 1 ? "on" : "off") + ")"));
         logger.info("Inizializzazione completata.");
     }
 
@@ -86,8 +98,10 @@ public class BlackjackEnvironment extends Environment {
                         try {
                             final NumberTerm betAmountTerm = (NumberTerm) action.getTerm(0);
                             // currentBet = (int) betAmountTerm.solve();
-                            logger.log(Level.INFO, "L'agente " + agName + " ha piazzato una puntata di " + betAmountTerm);
-                            final GameCommand betCommand = GameCommand.parseBet(Integer.parseInt(betAmountTerm.toString()));
+                            logger.log(Level.INFO,
+                                    "L'agente " + agName + " ha piazzato una puntata di " + betAmountTerm);
+                            final GameCommand betCommand = GameCommand
+                                    .parseBet(Integer.parseInt(betAmountTerm.toString()));
                             this.appWindow.actionPerformed(betCommand);
                             return true;
                         } catch (final Exception e) {
@@ -103,14 +117,15 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.INFO, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
                     this.appWindow.actionPerformed(GameCommand.DEAL);
 
-                    if (agName.indexOf("hilo") > 1) {
+                    // if (agName.indexOf("hilo") > 1) {
+                    if (HILO.getName().equals(agName)) {
                         // aggiungo i valori delle mie carte al conteggio
                         final ListTerm cardList = new ListTermImpl();
                         for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
                                 .collect(Collectors.toList())) {
                             cardList.add(new NumberTermImpl(card));
                         }
-                        logger.log(Level.INFO, "Le cart della prima mano sono: " + cardList.toString());
+                        logger.log(Level.INFO, "Le carte della prima mano sono: " + cardList.toString());
                         this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
                     }
                     return true;
@@ -118,24 +133,30 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.INFO, "L'agente " + agName + " ha richiesto il valore della mano.");
                     logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
                     logger.log(Level.INFO,
-                            "Il giocatore e\' stato sconfitto dopo il check_hand_value?: " + this.gamePanel.getPlayer().hand.isBust());
+                            "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
+                            + this.gamePanel.getPlayer().hand.isBust());
                     logger.log(Level.INFO,
-                            "Il Dealer e\' stato sconfitto dopo il check_hand_value?: " + this.gamePanel.getDealer().hand.isBust());
+                            "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
+                            + this.gamePanel.getDealer().hand.isBust());
                     this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
                     if (!this.gamePanel.getPlayer().hand.isBust()) {
-                        logger.log(Level.INFO, "Il sistema inserisce val: " + "hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")");
-                        this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                        logger.log(Level.INFO, "Il sistema inserisce val: " + "hand_value("
+                                + this.gamePanel.getPlayer().hand.getTotal() + ")");
+                        this.addPercept(agName,
+                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
                     } else {
-                        logger.log(Level.INFO, "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
-                        this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                        logger.log(Level.INFO,
+                                "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
+                        this.addPercept(agName,
+                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
                     }
                     return true;
                 case "askCard":
                     logger.log(Level.INFO, "L'agente " + agName + " richiede una carta.");
                     logger.log(Level.INFO,
                             "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
-                    System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo") );
-                    if (agName.indexOf("hilo") > 1) {
+                    System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
+                    if (HILO.getName().equals(agName)) {
                         logger.log(Level.INFO, "L'agente " + agName + " e\' un hilo.");
                         final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
                         this.appWindow.actionPerformed(GameCommand.HIT);
@@ -143,21 +164,27 @@ public class BlackjackEnvironment extends Environment {
                         final int diff = afterScore - beforeScore;
                         logger.log(Level.INFO, "Il sistema inserisce val: " + "card_seen(" + diff + ")");
                     } else {
-                    this.appWindow.actionPerformed(GameCommand.HIT);
+                        this.appWindow.actionPerformed(GameCommand.HIT);
                     }
                     logger.log(Level.INFO,
                             "Aggiungo il nuovo valore della mano" + this.gamePanel.getPlayer().hand.getTotal());
                     logger.log(Level.INFO,
-                            "Il giocatore e\' stato sconfitto dopo ask_card?: " + this.gamePanel.getPlayer().hand.isBust());
+                            "Il giocatore e\' stato sconfitto dopo ask_card?: "
+                            + this.gamePanel.getPlayer().hand.isBust());
                     logger.log(Level.INFO,
-                            "Il Dealer e\' stato sconfitto dopo ask_card?: " + this.gamePanel.getDealer().hand.isBust());
+                            "Il Dealer e\' stato sconfitto dopo ask_card?: "
+                            + this.gamePanel.getDealer().hand.isBust());
                     this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
                     if (!this.gamePanel.getPlayer().hand.isBust()) {
-                        logger.log(Level.INFO, "Il sistema inserisce val: " + "hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")");
-                        this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                        logger.log(Level.INFO, "Il sistema inserisce val: " + "hand_value("
+                                + this.gamePanel.getPlayer().hand.getTotal() + ")");
+                        this.addPercept(agName,
+                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
                     } else {
-                        logger.log(Level.INFO, "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
-                        this.addPercept(agName, Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                        logger.log(Level.INFO,
+                                "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
+                        this.addPercept(agName,
+                                Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
                     }
                     return true;
                 case "stand":
