@@ -108,7 +108,7 @@ public class BlackjackEnvironment extends Environment {
                                 .collect(Collectors.toList())) {
                             cardList.add(new NumberTermImpl(card));
                         }
-                        logger.log(Level.INFO, "Le carte della prima mano sono: " + cardList.toString());
+                        logger.log(Level.INFO, "Le carte della prima mano del player sono: " + cardList.toString());
                         this.addPercept(HILO.name, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
                     }
                     //DEALER agent update cards
@@ -119,12 +119,12 @@ public class BlackjackEnvironment extends Environment {
                             .collect(Collectors.toList())) {
                         cardList.add(new NumberTermImpl(card));
                     }
-                    //formslmente la prima non la vede il player ma l'environemnt si
+                    //formalmente la prima non la vede il player ma l'environemnt si
                     logger.log(Level.INFO,
-                            "Le carte della prima mano sono: " + cardList.subList(1, cardList.size()).toString());
-                    this.addPercept(HILO.name, Literal
-                            .parseLiteral("update_counts(" + cardList.subList(1, cardList.size()).toString() + ")"));
-                    logger.log(Level.INFO, "Deal received by everyone");
+                            "Le carte della prima mano del dealer sono: " + cardList.subList(1, cardList.size()).toString());
+
+                    this.addPercept(DEALER.name, Literal
+                            .parseLiteral("tell_cards(" + cardList.subList(1, cardList.size()).toString() + ")"));
                     return true;
                 case "stand":
                      logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
@@ -137,8 +137,8 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.INFO, "Le carte del dealer sono: " + dealerCardList.toString());
                     dealerCardList.remove(1);
                     logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + dealerCardList.toString());
-                    this.addPercept(HILO.name, Literal
-                            .parseLiteral("update_counts(" + dealerCardList.toString() + ")"));
+                    this.addPercept(DEALER.name, Literal
+                            .parseLiteral("tell_cards(" + dealerCardList.toString() + ")"));
                     return true;
                 default:
                     if(DEALER.getName().equals(agName)) {
@@ -349,6 +349,19 @@ public class BlackjackEnvironment extends Environment {
         } else {
             logger.log(Level.INFO,
                     "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
+                    //aggiorno le carte viste dal player nel caso in cui il dealer sbanca
+                    final ListTerm cardList = new ListTermImpl();
+                    for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
+                            .collect(Collectors.toList())) {
+                        cardList.add(new NumberTermImpl(card));
+                    }
+                    //formalmente la prima non la vede il player ma l'environemnt si
+                    logger.log(Level.INFO,
+                            "Le carte della prima mano sono: " + cardList.subList(1, cardList.size()).toString());
+
+                    this.addPercept(DEALER.name, Literal
+                            .parseLiteral("tell_cards(" + cardList.subList(1, cardList.size()).toString() + ")"));
+                    logger.log(Level.INFO, "Deal received by everyone");
             this.addPercept(agName,
                     Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
         }

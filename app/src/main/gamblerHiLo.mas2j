@@ -6,6 +6,7 @@ MAS gambler {
 
 	agents:
 		gamblerhilo gamblerhilo ;
+		dealer dealer ;
 
 	aslSourcePath:
 		"src/main/asl";
