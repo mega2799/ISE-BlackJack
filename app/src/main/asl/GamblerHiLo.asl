@@ -29,7 +29,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !debug_print_helper(Msg2, T).
 
 +!tick <- 
-    .wait(200).
+    .wait(2000).
 
 +!set_debug(on) <- 
     -debug_mode(_);
@@ -77,18 +77,6 @@ card_count(0).  // Iniziamo con un conteggio di 0
 +hand_value(0).
 
 !start_play.
-
-// +hand_value(V) : V < 17 <- 
-//     !debug_print(["La mia mano ha valore ", V]);
-//     !ask_card. 
-
-// +hand_value(V) : V >= 17 & V <21 <- 
-//     !debug_print(["Ho vinto io skyler ", V]);
-//     stand;
-//     !debug_print(["Resetto la partita..."]);
-//     +hand_value(0);
-//     !tick;
-//     !start_play.
 
 //TODO inserire qui il punto di controllo nel caso in cui il dealer sia busted e io vinca automaticamente
 +hand_value(V) <- 

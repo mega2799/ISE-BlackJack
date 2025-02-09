@@ -1,7 +1,5 @@
 package env;
 
-import static env.BlackjackEnvironment.AgentClassifier.HILO;
-
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,9 +11,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
+import blackjack.Cards.Card;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
-import blackjack.Cards.Card;
+import static env.BlackjackEnvironment.AgentClassifier.DEALER;
+import static env.BlackjackEnvironment.AgentClassifier.HILO;
 import jason.asSyntax.ListTerm;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
@@ -27,6 +27,7 @@ import jason.environment.Environment;
 public class BlackjackEnvironment extends Environment {
 
     public enum AgentClassifier {
+        DEALER("dealer"),
         HILO("gamblerhilo"),
         BASIC("gambler"),
         ADVANCED("bho");
@@ -96,93 +97,249 @@ public class BlackjackEnvironment extends Environment {
             return false;
         } else {
             switch (act) {
-                case "bet":
-                    if (action.getArity() == 1) {
-                        try {
-                            final NumberTerm betAmountTerm = (NumberTerm) action.getTerm(0);
-                            // currentBet = (int) betAmountTerm.solve();
-                            logger.log(Level.INFO,
-                                    "L'agente " + agName + " ha piazzato una puntata di " + betAmountTerm);
-                            final GameCommand betCommand = GameCommand
-                                    .parseBet(Integer.parseInt(betAmountTerm.toString()));
-                            this.appWindow.actionPerformed(betCommand);
-                            return true;
-                        } catch (final Exception e) {
-                            logger.log(Level.WARNING, "Errore nell'interpretare l'importo della puntata.", e);
-                            return false;
-                        }
-                    } else {
-                        logger.log(Level.WARNING, "L'azione bet richiede un parametro (importo della puntata).");
-                        return false;
-                    }
-
                 case "deal":
                     logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
                     this.appWindow.actionPerformed(GameCommand.DEAL);
 
-                    // if (agName.indexOf("hilo") > 1) {
+                    //HILO agent update cards
                     if (HILO.getName().equals(agName)) {
-                        // aggiungo i valori delle mie carte al conteggio
                         final ListTerm cardList = new ListTermImpl();
                         for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
                                 .collect(Collectors.toList())) {
                             cardList.add(new NumberTermImpl(card));
                         }
                         logger.log(Level.INFO, "Le carte della prima mano sono: " + cardList.toString());
-                        this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
+                        this.addPercept(HILO.name, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
                     }
-                    return true;
-                case "check_hand_value":
-                    logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto il valore della mano.");
-                    logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
-                    logger.log(Level.INFO,
-                            "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
-                            + this.gamePanel.getPlayer().hand.isBust());
-                    logger.log(Level.INFO,
-                            "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
-                            + this.gamePanel.getDealer().hand.isBust());
-                    this.checkIfBusted(agName);
-                    return true;
-                case "askCard":
-                    logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta.");
-                    logger.log(Level.INFO,
-                            "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
-                    System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
-                    if (HILO.getName().equals(agName)) {
-                        final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
-                        logger.log(Level.INFO, "Mano agente: " + agName + " before: " + beforeScore);
-                        this.appWindow.actionPerformed(GameCommand.HIT);
-                        final int afterScore = this.gamePanel.getPlayer().hand.getTotal();
-                        logger.log(Level.INFO, "Mano agente: " + agName + " after: " + afterScore);
-                        final int diff = afterScore - beforeScore;
-                        logger.log(Level.INFO, "Il sistema inserisce val: " + "card_seen(" + diff + ")");
-                        final ListTerm cardList = new ListTermImpl();
-                        cardList.add(new NumberTermImpl(diff));
-                        this.addPercept(agName, Literal.parseLiteral("card_seen(" + cardList.toString() + ")"));
-                    } else {
-                        this.appWindow.actionPerformed(GameCommand.HIT);
+                    //DEALER agent update cards
+                    //TODO non sarebbe meglio che il dealer gliele comunichi con un messaggio?
+                    //Probabilmente non andrebbe a diventare concorrente con l'update_counts dell'agente HILO
+                    final ListTerm cardList = new ListTermImpl();
+                    for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
+                            .collect(Collectors.toList())) {
+                        cardList.add(new NumberTermImpl(card));
                     }
+                    //formslmente la prima non la vede il player ma l'environemnt si
                     logger.log(Level.INFO,
-                            "Aggiungo il nuovo valore della mano" + this.gamePanel.getPlayer().hand.getTotal());
-                    logger.log(Level.INFO,
-                            "Il giocatore e\' stato sconfitto dopo ask_card?: "
-                            + this.gamePanel.getPlayer().hand.isBust());
-                    logger.log(Level.INFO,
-                            "Il Dealer e\' stato sconfitto dopo ask_card?: "
-                            + this.gamePanel.getDealer().hand.isBust());
-                    this.checkIfBusted(agName);
+                            "Le carte della prima mano sono: " + cardList.subList(1, cardList.size()).toString());
+                    this.addPercept(HILO.name, Literal
+                            .parseLiteral("update_counts(" + cardList.subList(1, cardList.size()).toString() + ")"));
+                    logger.log(Level.INFO, "Deal received by everyone");
                     return true;
                 case "stand":
-                    logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
+                     logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
                     this.appWindow.actionPerformed(GameCommand.STAND);
+                    final ListTerm dealerCardList = new ListTermImpl();
+                    for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
+                            .collect(Collectors.toList())) {
+                        dealerCardList.add(new NumberTermImpl(card));
+                    }
+                    logger.log(Level.INFO, "Le carte del dealer sono: " + dealerCardList.toString());
+                    dealerCardList.remove(1);
+                    logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + dealerCardList.toString());
+                    this.addPercept(HILO.name, Literal
+                            .parseLiteral("update_counts(" + dealerCardList.toString() + ")"));
                     return true;
                 default:
-                    logger.log(Level.WARNING, "Azione non riconosciuta: " + act);
-                    return false;
+                    if(DEALER.getName().equals(agName)) {
+                        return this.manageDealerAction(agName, action, act);
+                    } else {
+                        return this.manageGamblerAction(agName, action, act);
+                    }
+
             }
         }
     }
 
+
+    @SuppressWarnings("LoggerStringConcat")
+    private Boolean manageDealerAction(final String agName, final Structure action, final String act) {
+        switch (act) {
+            // case "bet":
+            //     if (action.getArity() == 1) {
+            //         try {
+            //             final NumberTerm betAmountTerm = (NumberTerm) action.getTerm(0);
+            //             // currentBet = (int) betAmountTerm.solve();
+            //             logger.log(Level.INFO,
+            //                     "L'agente " + agName + " ha piazzato una puntata di " + betAmountTerm);
+            //             final GameCommand betCommand = GameCommand
+            //                     .parseBet(Integer.valueOf(betAmountTerm.toString()));
+            //             this.appWindow.actionPerformed(betCommand);
+            //             return true;
+            //         } catch (final Exception e) {
+            //             logger.log(Level.WARNING, "Errore nell'interpretare l'importo della puntata.", e);
+            //             return false;
+            //         }
+            //     } else {
+            //         logger.log(Level.WARNING, "L'azione bet richiede un parametro (importo della puntata).");
+            //         return false;
+            //     }
+
+            // case "deal":
+            //     logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
+            //     this.appWindow.actionPerformed(GameCommand.DEAL);
+
+            //     // if (agName.indexOf("hilo") > 1) {
+            //     if (HILO.getName().equals(agName)) {
+            //         // aggiungo i valori delle mie carte al conteggio
+            //         final ListTerm cardList = new ListTermImpl();
+            //         for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
+            //                 .collect(Collectors.toList())) {
+            //             cardList.add(new NumberTermImpl(card));
+            //         }
+            //         logger.log(Level.INFO, "Le carte della prima mano sono: " + cardList.toString());
+            //         this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
+            //     }
+            //     return true;
+            case "check_hand_value":
+                logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto il valore della mano.");
+                logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getDealer().hand.getTotal());
+                logger.log(Level.INFO,
+                        "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
+                        + this.gamePanel.getPlayer().hand.isBust());
+                logger.log(Level.INFO,
+                        "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
+                        + this.gamePanel.getDealer().hand.isBust());
+                this.checkIfBusted(agName);
+                return true;
+            case "askCard":
+                logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta.");
+                logger.log(Level.INFO,
+                        "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
+                System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
+                if (HILO.getName().equals(agName)) {
+                    final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
+                    logger.log(Level.INFO, "Mano agente: " + agName + " before: " + beforeScore);
+                    this.appWindow.actionPerformed(GameCommand.HIT);
+                    final int afterScore = this.gamePanel.getPlayer().hand.getTotal();
+                    logger.log(Level.INFO, "Mano agente: " + agName + " after: " + afterScore);
+                    final int diff = afterScore - beforeScore;
+                    // //! caso speciale in cui l'asso cambia il valore da 11 ad 1
+                    // if (diff < 0) {
+                    //     diff += 10;
+                    // }
+                    logger.log(Level.INFO, "Il sistema inserisce val: " + "card_seen(" + diff + ")");
+                    final ListTerm cardList = new ListTermImpl();
+                    cardList.add(new NumberTermImpl(diff));
+                    this.addPercept(agName, Literal.parseLiteral("card_seen(" + cardList.toString() + ")"));
+                } else {
+                    this.appWindow.actionPerformed(GameCommand.HIT);
+                }
+                logger.log(Level.INFO,
+                        "Aggiungo il nuovo valore della mano" + this.gamePanel.getPlayer().hand.getTotal());
+                logger.log(Level.INFO,
+                        "Il giocatore e\' stato sconfitto dopo ask_card?: "
+                        + this.gamePanel.getPlayer().hand.isBust());
+                logger.log(Level.INFO,
+                        "Il Dealer e\' stato sconfitto dopo ask_card?: "
+                        + this.gamePanel.getDealer().hand.isBust());
+                this.checkIfBusted(agName);
+                return true;
+            // case "stand":
+            //     logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
+            //     this.appWindow.actionPerformed(GameCommand.STAND);
+            //     return true;
+            default:
+                logger.log(Level.WARNING, "Azione non riconosciuta: " + act);
+                return false;
+        }
+    }
+
+
+
+    @SuppressWarnings("LoggerStringConcat")
+    private Boolean manageGamblerAction(final String agName, final Structure action, final String act) {
+        switch (act) {
+            case "bet":
+                if (action.getArity() == 1) {
+                    try {
+                        final NumberTerm betAmountTerm = (NumberTerm) action.getTerm(0);
+                        // currentBet = (int) betAmountTerm.solve();
+                        logger.log(Level.INFO,
+                                "L'agente " + agName + " ha piazzato una puntata di " + betAmountTerm);
+                        final GameCommand betCommand = GameCommand
+                                .parseBet(Integer.valueOf(betAmountTerm.toString()));
+                        this.appWindow.actionPerformed(betCommand);
+                        return true;
+                    } catch (final Exception e) {
+                        logger.log(Level.WARNING, "Errore nell'interpretare l'importo della puntata.", e);
+                        return false;
+                    }
+                } else {
+                    logger.log(Level.WARNING, "L'azione bet richiede un parametro (importo della puntata).");
+                    return false;
+                }
+
+            // case "deal":
+            //     logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto di iniziare una nuova partita.");
+            //     this.appWindow.actionPerformed(GameCommand.DEAL);
+
+            //     // if (agName.indexOf("hilo") > 1) {
+            //     if (HILO.getName().equals(agName)) {
+            //         // aggiungo i valori delle mie carte al conteggio
+            //         final ListTerm cardList = new ListTermImpl();
+            //         for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
+            //                 .collect(Collectors.toList())) {
+            //             cardList.add(new NumberTermImpl(card));
+            //         }
+            //         logger.log(Level.INFO, "Le carte della prima mano sono: " + cardList.toString());
+            //         this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
+            //     }
+            //     return true;
+            case "check_hand_value":
+                logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto il valore della mano.");
+                logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
+                logger.log(Level.INFO,
+                        "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
+                        + this.gamePanel.getPlayer().hand.isBust());
+                logger.log(Level.INFO,
+                        "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
+                        + this.gamePanel.getDealer().hand.isBust());
+                this.checkIfBusted(agName);
+                return true;
+            case "askCard":
+                logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta.");
+                logger.log(Level.INFO,
+                        "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
+                System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
+                if (HILO.getName().equals(agName)) {
+                    final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
+                    logger.log(Level.INFO, "Mano agente: " + agName + " before: " + beforeScore);
+                    this.appWindow.actionPerformed(GameCommand.HIT);
+                    final int afterScore = this.gamePanel.getPlayer().hand.getTotal();
+                    logger.log(Level.INFO, "Mano agente: " + agName + " after: " + afterScore);
+                    int diff = afterScore - beforeScore;
+                    //! caso speciale in cui l'asso cambia il valore da 11 ad 1
+                    if (diff < 0) {
+                        diff += 10;
+                    }    logger.log(Level.INFO, "Il sistema inserisce val: " + "card_seen(" + diff + ")");
+                    final ListTerm cardList = new ListTermImpl();
+                    cardList.add(new NumberTermImpl(diff));
+                    this.addPercept(agName, Literal.parseLiteral("card_seen(" + cardList.toString() + ")"));
+                } else {
+                    this.appWindow.actionPerformed(GameCommand.HIT);
+                }
+                logger.log(Level.INFO,
+                        "Aggiungo il nuovo valore della mano" + this.gamePanel.getPlayer().hand.getTotal());
+                logger.log(Level.INFO,
+                        "Il giocatore e\' stato sconfitto dopo ask_card?: "
+                        + this.gamePanel.getPlayer().hand.isBust());
+                logger.log(Level.INFO,
+                        "Il Dealer e\' stato sconfitto dopo ask_card?: "
+                        + this.gamePanel.getDealer().hand.isBust());
+                this.checkIfBusted(agName);
+                return true;
+            // case "stand":
+            //     logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
+            //     this.appWindow.actionPerformed(GameCommand.STAND);
+            //     return true;
+            default:
+                logger.log(Level.WARNING, "Azione non riconosciuta: " + act);
+                return false;
+        }
+    }
+
+    @SuppressWarnings("LoggerStringConcat")
     private void checkIfBusted(final String agName) {
         this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
         if (!this.gamePanel.getPlayer().hand.isBust()) {
