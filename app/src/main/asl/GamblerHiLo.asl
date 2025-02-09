@@ -29,7 +29,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !debug_print_helper(Msg2, T).
 
 +!tick <- 
-    .wait(200).
+    .wait(2000).
 
 +!set_debug(on) <- 
     -debug_mode(_);
@@ -99,15 +99,15 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !tick;
     end_game;
     !debug_print(["###################### Done ######################"]);
-    // -hand_value(V);
-    // +hand_value(0);
+    -hand_value(V);
+    +hand_value(0);
     !tick;
     !start_play.
 
 //Jackpot si incassa
 +!decide_action(V, C) : V == 21 <- 
     !debug_print(["BlackJack!!! ", V]);
-    // stand;
+    stand;
     !tick;
     // end_game;
     !debug_print(["###################### Done ######################"]);
@@ -120,10 +120,10 @@ card_count(0).  // Iniziamo con un conteggio di 0
 +!decide_action(V, C) : V > 21 <- 
     !debug_print(["Ho perso la fresca"]);
     !tick;
-    // end_game;
+    end_game;
     !debug_print(["###################### Done ######################"]);
-    // -hand_value(V);
-    // +hand_value(0);
+    -hand_value(V);
+    +hand_value(0);
     !tick;
     !start_play.
 

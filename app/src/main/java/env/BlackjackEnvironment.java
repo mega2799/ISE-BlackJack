@@ -1,8 +1,5 @@
 package env;
 
-import static env.BlackjackEnvironment.AgentClassifier.DEALER;
-import static env.BlackjackEnvironment.AgentClassifier.HILO;
-
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,9 +11,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
+import blackjack.Cards.Card;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
-import blackjack.Cards.Card;
+import static env.BlackjackEnvironment.AgentClassifier.DEALER;
+import static env.BlackjackEnvironment.AgentClassifier.HILO;
 import jason.asSyntax.ListTerm;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
