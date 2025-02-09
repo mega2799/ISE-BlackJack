@@ -131,7 +131,7 @@ public class GamePanel extends JPanel {
 
         // Inizializza dealer e player
         this.dealer = new Dealer();
-        this.player = new Player("James Bond", 32, "Male");
+        this.player = new Player("Kevin Spacey", 66, "Male");
         this.player.setWallet(walletAmount);
 
         // Aggiungi i listener tramite lambda expressions

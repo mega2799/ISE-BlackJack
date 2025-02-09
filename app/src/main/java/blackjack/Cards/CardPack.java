@@ -32,7 +32,7 @@ public class CardPack extends Stack<Card>
                 for (int i = 1; i < 14; i++)
                 {
                     this.push(new Card(new Face(i), new Suit(suit), cardCode));
-                    cardCode = (cardCode + 1) % CARDS_IN_PACK;
+                    cardCode = (cardCode + 1);
                 }
             }
         // }

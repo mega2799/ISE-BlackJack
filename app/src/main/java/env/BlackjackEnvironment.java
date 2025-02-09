@@ -1,5 +1,8 @@
 package env;
 
+import static env.BlackjackEnvironment.AgentClassifier.DEALER;
+import static env.BlackjackEnvironment.AgentClassifier.HILO;
+
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,11 +14,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
-import blackjack.Cards.Card;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
-import static env.BlackjackEnvironment.AgentClassifier.DEALER;
-import static env.BlackjackEnvironment.AgentClassifier.HILO;
+import blackjack.Cards.Card;
 import jason.asSyntax.ListTerm;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
@@ -126,6 +127,9 @@ public class BlackjackEnvironment extends Environment {
                     this.addPercept(DEALER.name, Literal
                             .parseLiteral("tell_cards(" + cardList.subList(1, cardList.size()).toString() + ")"));
                     return true;
+                case "end_game":
+                    this.getEndPlayerCardList();
+                    return true;
                 case "stand":
                      logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
                     this.appWindow.actionPerformed(GameCommand.STAND);
@@ -139,6 +143,10 @@ public class BlackjackEnvironment extends Environment {
                     logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + dealerCardList.toString());
                     this.addPercept(DEALER.name, Literal
                             .parseLiteral("tell_cards(" + dealerCardList.toString() + ")"));
+                    // this.executeAction(agName, new Structure(Literal.parseLiteral("end_game")));
+                    //!duplicato???? ma almeno no si blocca ad un han_value random.......
+                    this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
+                    this.getEndPlayerCardList();
                     return true;
                 default:
                     if(DEALER.getName().equals(agName)) {
@@ -149,6 +157,31 @@ public class BlackjackEnvironment extends Environment {
 
             }
         }
+    }
+
+    private void getEndPlayerCardList() {
+        //dealer has to show his cards
+        final ListTerm endDealerCardList = new ListTermImpl();
+        for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
+                .collect(Collectors.toList())) {
+            endDealerCardList .add(new NumberTermImpl(card));
+        }
+        logger.log(Level.INFO, "Le carte del dealer sono: " + endDealerCardList .toString());
+        endDealerCardList .remove(1);
+        logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + endDealerCardList .toString());
+        this.addPercept(DEALER.name, Literal
+                .parseLiteral("tell_cards(" + endDealerCardList .toString() + ")"));
+        //agents register his hadn at end of the game
+        final ListTerm endPlayerCardList = new ListTermImpl();
+        for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
+                .collect(Collectors.toList())) {
+            endPlayerCardList.add(new NumberTermImpl(card));
+        }
+        logger.log(Level.INFO, "Le carte del player sono: " + endPlayerCardList.toString());
+        this.addPercept(HILO.name, Literal
+                .parseLiteral("update_counts(" + endPlayerCardList.toString() + ")"));
+
+        this.addPercept(HILO.name, Literal.parseLiteral("hand_value(0)"));
     }
 
 
@@ -303,7 +336,7 @@ public class BlackjackEnvironment extends Environment {
                         "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
                 System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
                 if (HILO.getName().equals(agName)) {
-                    final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
+                    int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
                     logger.log(Level.INFO, "Mano agente: " + agName + " before: " + beforeScore);
                     this.appWindow.actionPerformed(GameCommand.HIT);
                     final int afterScore = this.gamePanel.getPlayer().hand.getTotal();
@@ -311,7 +344,9 @@ public class BlackjackEnvironment extends Environment {
                     int diff = afterScore - beforeScore;
                     //! caso speciale in cui l'asso cambia il valore da 11 ad 1
                     if (diff < 0) {
-                        diff += 10;
+                        logger.log(Level.INFO, "Il valore dell'asso e\' cambiato da 11 a 1 svegliaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                        beforeScore -= 10;
+                        diff = afterScore - beforeScore;
                     }    logger.log(Level.INFO, "Il sistema inserisce val: " + "card_seen(" + diff + ")");
                     final ListTerm cardList = new ListTermImpl();
                     cardList.add(new NumberTermImpl(diff));
@@ -361,7 +396,7 @@ public class BlackjackEnvironment extends Environment {
 
                     this.addPercept(DEALER.name, Literal
                             .parseLiteral("tell_cards(" + cardList.subList(1, cardList.size()).toString() + ")"));
-                    logger.log(Level.INFO, "Deal received by everyone");
+                    // logger.log(Level.INFO, "Deal received by everyone");
             this.addPercept(agName,
                     Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
         }
