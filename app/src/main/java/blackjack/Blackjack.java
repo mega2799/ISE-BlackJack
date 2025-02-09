@@ -2,8 +2,10 @@
 // jar -cfvm Blackjack.jar Blackjack.mf *.class card_images Cards/*.class Players/*.class
 package blackjack;
 
-
 import javax.swing.UIManager;
+
+import com.formdev.flatlaf.FlatLightLaf;
+
 
 public class Blackjack
 {
@@ -11,7 +13,18 @@ public class Blackjack
     {
         try
         {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // UIManager.setLookAndFeel(new FlatLightLaf());
+            UIManager.setLookAndFeel(new FlatLightLaf());
+
+
+
+            UIManager.put("Button.arc", 999);                       // bottoni rotondi
+            UIManager.put("Button.background", "#E0E0E0");            // colore di sfondo
+            UIManager.put("Button.foreground", "#333333");            // colore del testo
+            UIManager.put("Button.font", new java.awt.Font("Arial", java.awt.Font.BOLD, 14));
+            UIManager.put("Button.focusWidth", 0);                    // rimuove il bordo focus
+            // Puoi aggiungere ulteriori proprietà di FlatLaf per altri componenti se vuoi.
         }
         catch (final Exception e)
         {
@@ -31,6 +44,10 @@ public class Blackjack
         
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         
-        final AppWindow window = new AppWindow();      
+        // final AppWindow window = new AppWindow();      
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            final AppWindow window = new AppWindow(100.00);  // Supponendo che AppWindow sia la tua finestra principale
+            window.setVisible(true);
+        });
     }
 }

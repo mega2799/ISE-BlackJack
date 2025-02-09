@@ -3,11 +3,13 @@ package blackjack;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import blackjack.Cards.Card;
@@ -15,11 +17,18 @@ import blackjack.Cards.CardPack;
 import blackjack.Cards.DealerCardHand;
 import blackjack.Cards.PlayerCardHand;
 
-public class GameTable extends JPanel
-{
+public class GameTable extends JPanel {
     private DealerCardHand dealer;
     private PlayerCardHand player;
     
+    public DealerCardHand getDealerHand() {
+        return this.dealer;
+    }
+
+    public PlayerCardHand getPlayerHand() {
+        return this.player;
+    }
+
     private boolean showAllDealerCards;
     
     // drawing position vars
@@ -39,151 +48,117 @@ public class GameTable extends JPanel
     private String dealerName;
     private String playerName;
     
-    private final Image[] cardImages = new Image[CardPack.CARDS_IN_PACK + 1];
+    // Utilizzo BufferedImage per immagini moderne
+    private final BufferedImage[] cardImages = new BufferedImage[CardPack.CARDS_IN_PACK + 1];
     
-    // take game model as parameter so that it can get cards and draw them
-    public GameTable()
-    {
+    public GameTable() {
         super();
-        
         this.setBackground(Color.BLUE);
         this.setOpaque(false);
         
-        this.handTotalFont = new Font("Serif", Font.PLAIN, 96);
-        this.playerNameFont = new Font("Serif", Font.ITALIC, 20);
+        this.handTotalFont = new Font("Arial", Font.PLAIN, 96);
+        this.playerNameFont = new Font("Arial", Font.ITALIC, 20);
         
         this.showAllDealerCards = true;
         
-        for (int i = 0; i < CardPack.CARDS_IN_PACK; i++)
-        {
-            // final String cardName = "card_images/" + (i+1) + ".png";
-            System.out.println("card_images/"+ (i+1) + ".png");
-            final URL cardName = ClassLoader.getSystemResource("card_images/"+ (i+1) + ".png");
-            
-            // System.out.println(this.getClass().getResource(cardName));
-            // final URL urlImg = this.getClass().getResource(cardName);
-            System.out.println(cardName);
-            final Image cardImage = Toolkit.getDefaultToolkit().getImage(cardName);
-            this.cardImages[i] = cardImage;
+        // Caricamento delle immagini delle carte
+        for (int i = 0; i < CardPack.CARDS_IN_PACK; i++) {
+            final String imagePath = "card_images/" + (i + 1) + ".png";
+            final URL imageUrl = ClassLoader.getSystemResource(imagePath);
+            try {
+                this.cardImages[i] = ImageIO.read(imageUrl);
+            } catch (final IOException ex) {
+                System.err.println("Errore nel caricamento dell'immagine: " + imagePath);
+            }
         }
         
-        final String backCard = "card_images/red_back.png";
-        
-        // final URL backCardURL = this.getClass().getResource(backCard);
-        final URL backCardURL  = ClassLoader.getSystemResource(backCard);
-        final Image backCardImage = Toolkit.getDefaultToolkit().getImage(backCardURL);
-        
-        this.cardImages[CardPack.CARDS_IN_PACK] = backCardImage;
-        
-        final MediaTracker imageTracker = new MediaTracker(this);
-        
-        for (int i = 0; i < CardPack.CARDS_IN_PACK + 1; i++)
-        {
-            imageTracker.addImage(this.cardImages[i], i + 1); 
-        }
-        
-        try
-        {
-            imageTracker.waitForAll();
-        }
-        catch (final InterruptedException excep)
-        {
-            System.out.println("Interrupted while loading card images.");
+        // Caricamento dell'immagine del retro della carta
+        final String backCardPath = "card_images/red_back.png";
+        final URL backCardUrl = ClassLoader.getSystemResource(backCardPath);
+        try {
+            this.cardImages[CardPack.CARDS_IN_PACK] = ImageIO.read(backCardUrl);
+        } catch (final IOException ex) {
+            System.err.println("Errore nel caricamento dell'immagine: " + backCardPath);
         }
     }
     
-    public void setNames(final String dealerName, final String playerName)
-    {
+    public void setNames(final String dealerName, final String playerName) {
         this.dealerName = dealerName;
         this.playerName = playerName;
     }
     
-    public void update(final DealerCardHand dealer, final PlayerCardHand player, final boolean showDealer)
-    {        
+    public void update(final DealerCardHand dealer, final PlayerCardHand player, final boolean showDealer) {        
         this.dealer = dealer;
         this.player = player;
         this.showAllDealerCards = showDealer;
+        // Richiedi la ridipintura del pannello dopo l'aggiornamento
+        this.repaint();
     }
     
-    // draw images from jar archive or dir: http://www.particle.kth.se/~fmi/kurs/PhysicsSimulation/Lectures/10B/jar.html
-    
-    public void paintComponent(final Graphics g)
-    {
+    @Override
+    protected void paintComponent(final Graphics g) {
         super.paintComponent(g);
         
-        g.setColor(Color.WHITE);
+        // Uso di Graphics2D per una grafica migliore
+        final Graphics2D g2d = (Graphics2D) g;
+        // Abilita l'antialiasing per testi e grafica
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        g.setFont(this.playerNameFont);
-        
-        g.drawString(this.dealerName, this.CARD_START, this.DEALER_POSITION - this.NAME_SPACE);
-        g.drawString(this.playerName, this.CARD_START, this.PLAYER_POSITION - this.NAME_SPACE);
-        
-        g.setFont(this.handTotalFont);
-        
-        final String cardName;
-    
-        // draw dealer cards
-    
-        int i = this.CARD_START;
-    
-        if (this.showAllDealerCards)
-        {
-            for (final Card aCard : this.dealer)
-            {
-                g.drawImage(this.cardImages[aCard.getCode() - 1], i, this.DEALER_POSITION, this);
-
-                i += this.CARD_INCREMENT;
-            }
-        
-            g.drawString(Integer.toString(this.dealer.getTotal()), i 
-                + this.CARD_IMAGE_WIDTH + this.CARD_INCREMENT, this.DEALER_POSITION 
-                + this.CARD_IMAGE_HEIGHT);
+        // Disegna i nomi dei giocatori
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(this.playerNameFont);
+        if (this.dealerName != null) {
+            g2d.drawString(this.dealerName, this.CARD_START, this.DEALER_POSITION - this.NAME_SPACE);
         }
-        else
-        {
-            for (final Card aCard : this.dealer)
-            {
-                g.drawImage(this.cardImages[CardPack.CARDS_IN_PACK], i, this.DEALER_POSITION, this);
-
-                i += this.CARD_INCREMENT;
-            }
+        if (this.playerName != null) {
+            g2d.drawString(this.playerName, this.CARD_START, this.PLAYER_POSITION - this.NAME_SPACE);
+        }
         
-            try
-            {
-                final Card topCard = this.dealer.lastElement();
-            
-                i -= this.CARD_INCREMENT;
-            
-                g.drawImage(this.cardImages[topCard.getCode() - 1], i, this.DEALER_POSITION, this);
-            
-                
-                    
-                //
-                
+        // Disegna le carte del dealer
+        g2d.setFont(this.handTotalFont);
+        int xPos = this.CARD_START;
+        if (this.dealer != null) {
+            if (this.showAllDealerCards) {
+                for (final Card aCard : this.dealer) {
+                    // Si assume che getCode restituisca un valore 1-based
+                    g2d.drawImage(this.cardImages[aCard.getCode() - 1], xPos, this.DEALER_POSITION, this);
+                    xPos += this.CARD_INCREMENT;
+                }
+                // Disegna il totale delle carte
+                g2d.drawString(Integer.toString(this.dealer.getTotal()),
+                               xPos + this.CARD_IMAGE_WIDTH + this.CARD_INCREMENT,
+                               this.DEALER_POSITION + this.CARD_IMAGE_HEIGHT);
+            } else {
+                // Disegna il retro di tutte le carte
+                for (final Card aCard : this.dealer) {
+                    g2d.drawImage(this.cardImages[CardPack.CARDS_IN_PACK], xPos, this.DEALER_POSITION, this);
+                    xPos += this.CARD_INCREMENT;
+                }
+                try {
+                    // Recupera e ridisegna l'ultima carta (a faccia)
+                    final Card topCard = this.dealer.lastElement();
+                    xPos -= this.CARD_INCREMENT;
+                    g2d.drawImage(this.cardImages[topCard.getCode() - 1], xPos, this.DEALER_POSITION, this);
+                } catch (final Exception e) {
+                    // Gestione dell'assenza di carte
+                    // System.out.println("Nessuna carta ancora distribuita per il dealer.");
+                }
+                g2d.drawString("?",
+                               xPos + this.CARD_IMAGE_WIDTH + this.CARD_INCREMENT,
+                               this.DEALER_POSITION + this.CARD_IMAGE_HEIGHT);
             }
-            catch (final Exception e)
-            {
-                // caused when trying to draw cards from empty vector
-                // can't use NoSuchElementException above...?
-                System.out.println("No cards have been dealt yet.");
+        }
+        
+        // Disegna le carte del giocatore
+        xPos = this.CARD_START;
+        if (this.player != null) {
+            for (final Card aCard : this.player) {
+                g2d.drawImage(this.cardImages[aCard.getCode() - 1], xPos, this.PLAYER_POSITION, this);
+                xPos += this.CARD_INCREMENT;
             }
-            
-            g.drawString("?", i + this.CARD_IMAGE_WIDTH + this.CARD_INCREMENT, 
-                this.DEALER_POSITION + this.CARD_IMAGE_HEIGHT);
-            
+            g2d.drawString(Integer.toString(this.player.getTotal()),
+                           xPos + this.CARD_IMAGE_WIDTH + this.CARD_INCREMENT,
+                           this.PLAYER_POSITION + this.CARD_IMAGE_HEIGHT);
         }
-    
-        // draw player cards
-    
-        i = this.CARD_START;
-
-        for (final Card aCard : this.player)
-        {
-            g.drawImage(this.cardImages[aCard.getCode() - 1], i, this.PLAYER_POSITION, this);
-
-            i += this.CARD_INCREMENT;
-        }
-    
-        g.drawString(Integer.toString(this.player.getTotal()), i + this.CARD_IMAGE_WIDTH + this.CARD_INCREMENT, this.PLAYER_POSITION + this.CARD_IMAGE_HEIGHT); 
     }
 }
