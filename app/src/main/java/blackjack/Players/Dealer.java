@@ -1,6 +1,12 @@
 package blackjack.Players;
 
-import blackjack.Cards.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import blackjack.Cards.DealerCardHand;
+import blackjack.Cards.Deck;
+import blackjack.Cards.PlayerCardHand;
+import blackjack.EventListener;
 
 /**
  * Class representing the Dealer of a Blackjack game.
@@ -8,13 +14,15 @@ import blackjack.Cards.*;
  *
  * @author David Winter
  */
-public class Dealer extends BlackjackPlayer
+public class Dealer extends BlackjackPlayer implements EventListener
 {
     /**
      * The Deck of cards used for the game. The Dealer is in complete control
      * of the Deck.
      */
-    private Deck deck;
+    public Deck deck;
+    private final List<EventListener> listeners = new ArrayList<>();
+
     
     public DealerCardHand hand = new DealerCardHand();
     
@@ -47,47 +55,61 @@ public class Dealer extends BlackjackPlayer
     {
         super("Le Chiffre", 45, "male");
         
-        deck = new Deck(CARD_PACKS);
+        this.deck = new Deck(CARD_PACKS);
+        this.deck.addListener(this);
     }
     
-    public void say(String announcement)
+    public void say(final String announcement)
     {
-        said = announcement;
-        System.out.println(said);
+        this.said = announcement;
+        System.out.println(this.said);
     }
     
     public String says()
     {
-        return said;
+        return this.said;
     }
     
     public boolean isGameOver()
     {
-        return gameOver;
+        return this.gameOver;
     }
     
     public boolean areCardsFaceUp()
     {
-        return cardsFaceUp;
+        return this.cardsFaceUp;
     }
     
+    public void addListener(final EventListener listener) {
+        this.listeners.add(listener);
+    }
+
+    public void removeListener(final EventListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    private void notifyListeners(final String message) {
+        for (final EventListener listener : this.listeners) {
+            listener.onEvent(message);
+        }
+    }
     /**
      * Acknowledge the bet from the player.
      *
      * @param   player  The player placing the bet.
      * @param   bet     The amount for the bet.
      */
-    public boolean acceptBetFrom(Player player, double bet)
+    public boolean acceptBetFrom(final Player player, final double bet)
     {
-        boolean betSet = player.setBet(bet);
+        final boolean betSet = player.setBet(bet);
         
         if (player.betPlaced())
         {
-            say("Thank you for your bet of $" + player.getBet() + ". Would you like me to deal?");
+            this.say("Thank you for your bet of $" + player.getBet() + ". Would you like me to deal?");
         }
         else
         {
-            say("Please place your bet.");
+            this.say("Please place your bet.");
         }
         
         return (betSet) ? true : false;
@@ -100,42 +122,42 @@ public class Dealer extends BlackjackPlayer
      *
      * @return True if cards were dealt, otherwise false.
      */
-    public boolean deal(Player player)
+    public boolean deal(final Player player)
     {
         boolean cardsDealt = false;
         
         if (player.betPlaced() && !player.isBankrupt())
         {   
-            gameOver = false;
-            cardsFaceUp = false;
+            this.gameOver = false;
+            this.cardsFaceUp = false;
 
-            playerCanDouble = true;
+            this.playerCanDouble = true;
             
             player.hand = new PlayerCardHand();
-            hand = new DealerCardHand();
+            this.hand = new DealerCardHand();
             
-            say("Initial deal made.");
+            this.say("Initial deal made.");
             
-            player.hand.add(deck.deal());
-            this.hand.add(deck.deal());
+            player.hand.add(this.deck.deal());
+            this.hand.add(this.deck.deal());
             
-            player.hand.add(deck.deal());
-            this.hand.add(deck.deal());
+            player.hand.add(this.deck.deal());
+            this.hand.add(this.deck.deal());
             
             cardsDealt = true;
-            firstDeal = false; 
+            this.firstDeal = false; 
             
             if (player.hand.hasBlackjack())
             {
-                say("Blackjack!");
-                go(player);
+                this.say("Blackjack!");
+                this.go(player);
             }
             
         }
         else if (!player.betPlaced())
         {
-            say("Please place your bets.");
-            gameOver = true;
+            this.say("Please place your bets.");
+            this.gameOver = true;
         }
         
         return cardsDealt;
@@ -146,18 +168,18 @@ public class Dealer extends BlackjackPlayer
      *
      * @param player The player requesting another card.
      */
-    public void hit(Player player)
+    public void hit(final Player player)
     {
-        say(player.getName() + " hits.");
-        player.hand.add(deck.deal());
+        this.say(player.getName() + " hits.");
+        player.hand.add(this.deck.deal());
         
-        playerCanDouble = false;
+        this.playerCanDouble = false;
         
         if (player.hand.isBust())
         {
-            say(player.getName() + " busts. Loses $" + player.getBet());
+            this.say(player.getName() + " busts. Loses $" + player.getBet());
             player.loses();
-            gameOver = true;
+            this.gameOver = true;
         }
     }
     
@@ -167,27 +189,27 @@ public class Dealer extends BlackjackPlayer
      *
      * @param player The player requesting to play double.
      */
-    public void playDouble(Player player)
+    public void playDouble(final Player player)
     {
-        if (player.doubleBet() && playerCanDouble)
+        if (player.doubleBet() && this.playerCanDouble)
         {
-            player.hand.add(deck.deal());
-            say(player.getName() + " plays double.");
+            player.hand.add(this.deck.deal());
+            this.say(player.getName() + " plays double.");
             
             if (player.hand.isBust())
             {
-                say(player.getName() + " busts. Loses $" + player.getBet());
+                this.say(player.getName() + " busts. Loses $" + player.getBet());
                 player.loses();
-                gameOver = true;
+                this.gameOver = true;
             }
             else
             {
-                go(player);
+                this.go(player);
             }
         }
         else
         {
-            say(player.getName() + ", you can't double. Not enough money.");
+            this.say(player.getName() + ", you can't double. Not enough money.");
         }
     }
     
@@ -196,10 +218,10 @@ public class Dealer extends BlackjackPlayer
      *
      * @param player The player who wishes to stand.
      */
-    public void stand(Player player)
+    public void stand(final Player player)
     {
-        say(player.getName() + " stands. " + this.getName() + " turn.");
-        go(player);
+        this.say(player.getName() + " stands. " + this.getName() + " turn.");
+        this.go(player);
     }
     
     /**
@@ -207,89 +229,95 @@ public class Dealer extends BlackjackPlayer
      *
      * @param player The opposing player of the dealer.
      */
-    private void go(Player player)
+    private void go(final Player player)
     {
-        cardsFaceUp = true;
+        this.cardsFaceUp = true;
         
-        if (!hand.hasBlackjack())
+        if (!this.hand.hasBlackjack())
         {
-            while (hand.getTotal() < DEALER_STANDS_ON)
+            while (this.hand.getTotal() < DEALER_STANDS_ON)
             {
-                hand.add(deck.deal());
-                say(this.getName() + " hits.");
+                this.hand.add(this.deck.deal());
+                this.say(this.getName() + " hits.");
             }
             
-            if (hand.isBust())
+            if (this.hand.isBust())
             {
-                say(this.getName() + " is BUST");
+                this.say(this.getName() + " is BUST");
+                this.notifyListeners("dealer_bust");
             }
             else
             {
-                say(this.getName() + " stands on " + hand.getTotal());
+                this.say(this.getName() + " stands on " + this.hand.getTotal());
             }            
         }
         else
         {
-            say(this.getName() + " has BLACKJACK!");
+            this.say(this.getName() + " has BLACKJACK!");
         }
         
-        if (hand.hasBlackjack() && player.hand.hasBlackjack())
+        if (this.hand.hasBlackjack() && player.hand.hasBlackjack())
         {
-            say("Push");
+            this.say("Push");
             player.clearBet();
         }
         else if (player.hand.hasBlackjack())
         {
-            double winnings = (player.getBet() * 3) / 2;
-            say(player.getName() + " wins with Blackjack $" + winnings);
+            final double winnings = (player.getBet() * 3) / 2;
+            this.say(player.getName() + " wins with Blackjack $" + winnings);
             player.wins(player.getBet() + winnings);
         }
-        else if (hand.hasBlackjack())
+        else if (this.hand.hasBlackjack())
         {
-            say("Dealer has Blackjack. " + player.getName() + " loses $" + player.getBet());
+            this.say("Dealer has Blackjack. " + player.getName() + " loses $" + player.getBet());
             player.loses();
         }
-        else if (hand.isBust())
+        else if (this.hand.isBust())
         {
-            say("Dealer is bust. " + player.getName() + " wins $" + player.getBet());
+            this.say("Dealer is bust. " + player.getName() + " wins $" + player.getBet());
             player.wins(player.getBet() * 2);
         }
-        else if (player.hand.getTotal() == hand.getTotal())
+        else if (player.hand.getTotal() == this.hand.getTotal())
         {
-            say("Push");
+            this.say("Push");
             player.clearBet();
         }
-        else if (player.hand.getTotal() < hand.getTotal())
+        else if (player.hand.getTotal() < this.hand.getTotal())
         {
-            say(player.getName() + " loses $" + player.getBet());
+            this.say(player.getName() + " loses $" + player.getBet());
             player.loses();
         }
-        else if (player.hand.getTotal() > hand.getTotal())
+        else if (player.hand.getTotal() > this.hand.getTotal())
         {
-            say(player.getName() + " wins $" + player.getBet());
+            this.say(player.getName() + " wins $" + player.getBet());
             player.wins(player.getBet() * 2);
         }
         
-        gameOver = true;
+        this.gameOver = true;
     }
     
     public int cardsLeftInPack()
     {
-        return deck.size();
+        return this.deck.size();
     }
     
     public void newDeck()
     {
-        deck = new Deck(CARD_PACKS);
+        this.deck = new Deck(CARD_PACKS);
     }
     
-    public boolean canPlayerDouble(Player player)
+    public boolean canPlayerDouble(final Player player)
     {
-        return (playerCanDouble && player.canDouble()) ? true : false;
+        return (this.playerCanDouble && player.canDouble()) ? true : false;
     }
     
     public DealerCardHand getHand()
     {
-        return hand;
+        return this.hand;
+    }
+
+    @Override
+    public void onEvent(final String message) {
+        this.notifyListeners(message);
     }
 }

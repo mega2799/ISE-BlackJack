@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -22,7 +24,7 @@ import blackjack.Cards.PlayerCardHand;
 import blackjack.Players.Dealer;
 import blackjack.Players.Player;
 
-public class GamePanel extends JPanel {
+public class GamePanel extends JPanel implements EventListener{
 
     private final Dealer dealer;
     private Player player;
@@ -40,6 +42,9 @@ public class GamePanel extends JPanel {
     public GameTable getTable() {
         return this.table;
     }
+
+    private final List<EventListener> listeners = new ArrayList<>();
+
 
     // Bottoni per il gioco
     private final JButton newGameButton = new JButton("Deal");
@@ -131,6 +136,7 @@ public class GamePanel extends JPanel {
 
         // Inizializza dealer e player
         this.dealer = new Dealer();
+        this.dealer.addListener(this);
         this.player = new Player("Kevin Spacey", 66, "Male");
         this.player.setWallet(walletAmount);
 
@@ -216,8 +222,9 @@ public class GamePanel extends JPanel {
 
     public void updateValues() {
         // Aggiorna il messaggio del dealer
-        this.dealerSays.setText("<html><p align=\"center\"><font face=\"Serif\" color=\"white\" style=\"font-size: 20pt\">" 
-                + this.dealer.says() + "</font></p></html>");
+        this.dealerSays
+                .setText("<html><p align=\"center\"><font face=\"Serif\" color=\"white\" style=\"font-size: 20pt\">"
+                        + this.dealer.says() + "</font></p></html>");
 
         // Aggiorna lo stato dei bottoni a seconda dello stato del gioco
         if (this.dealer.isGameOver()) {
@@ -252,7 +259,8 @@ public class GamePanel extends JPanel {
         this.table.setNames(this.dealer.getName(), this.player.getName());
         this.table.repaint();
 
-        this.cardsLeft.setText("Deck: " + this.dealer.cardsLeftInPack() + "/" + (this.dealer.CARD_PACKS * CardPack.CARDS_IN_PACK));
+        this.cardsLeft.setText(
+                "Deck: " + this.dealer.cardsLeftInPack() + "/" + (this.dealer.CARD_PACKS * CardPack.CARDS_IN_PACK));
 
         // Se il giocatore è in bancarotta, offri ulteriori fondi
         if (this.player.isBankrupt()) {
@@ -262,6 +270,20 @@ public class GamePanel extends JPanel {
         // Aggiorna le etichette di bet e wallet
         this.currentBet.setText(String.format("$%.2f", this.player.getBet()));
         this.playerWallet.setText(String.format("$%.2f", this.player.getWallet()));
+    }
+    
+    public void addListener(final EventListener listener) {
+        this.listeners.add(listener);
+    }
+
+    public void removeListener(final EventListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    private void notifyListeners(final String message) {
+        for (final EventListener listener : this.listeners) {
+            listener.onEvent(message);
+        }
     }
 
     private void moreFunds() {
@@ -328,5 +350,10 @@ public class GamePanel extends JPanel {
         final PlayerDialog playerDetails = new PlayerDialog(null, "Player Details", true, this.player);
         playerDetails.setVisible(true);
         this.player = playerDetails.getPlayer();
+    }
+
+    @Override
+    public void onEvent(final String message) {
+            this.notifyListeners(message);
     }
 }

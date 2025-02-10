@@ -12,6 +12,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
 import blackjack.Cards.Card;
+import blackjack.EventListener;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
 import static env.BlackjackEnvironment.AgentClassifier.DEALER;
@@ -24,7 +25,7 @@ import jason.asSyntax.NumberTermImpl;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
 
-public class BlackjackEnvironment extends Environment {
+public class BlackjackEnvironment extends Environment implements EventListener {
 
     public enum AgentClassifier {
         DEALER("dealer"),
@@ -58,6 +59,7 @@ public class BlackjackEnvironment extends Environment {
         this.beatufiySwing();
         this.appWindow = new AppWindow(args.length > 0 ? Double.parseDouble(args[0]) : 1000);
         this.gamePanel = this.appWindow.getGamePanel();
+        this.gamePanel.addListener(this);
         this.addPercept(Literal.parseLiteral("debug_mode(" + (Integer.parseInt(args[1]) == 1 ? "on" : "off") + ")"));
         logger.info("Inizializzazione completata.");
         // logger.setLevel(Level.WARNING);
@@ -158,6 +160,7 @@ public class BlackjackEnvironment extends Environment {
         }
     }
 
+    @SuppressWarnings("LoggerStringConcat")
     private void getEndPlayerCardList() {
         //dealer has to show his cards
         final ListTerm endDealerCardList = new ListTermImpl();
@@ -399,5 +402,16 @@ public class BlackjackEnvironment extends Environment {
             this.addPercept(agName,
                     Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
         }
+    }
+
+    @Override
+    public void onEvent(final String message) {
+        if ("Deck".equals(message)) {
+            this.addPercept(HILO.name,
+                    Literal.parseLiteral("reset_card_count"));
+        } else {
+            logger.log(Level.WARNING, "Evento non riconosciuto: " + message);
+        }
+
     }
 }

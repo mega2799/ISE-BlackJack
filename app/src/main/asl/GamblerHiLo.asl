@@ -29,7 +29,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !debug_print_helper(Msg2, T).
 
 +!tick <- 
-    .wait(2000).
+    .wait(200).
 
 +!set_debug(on) <- 
     -debug_mode(_);
@@ -43,6 +43,11 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 
 //********************************************************************* Conteggio carte ********************************************************************* */
+
++reset_card_count <- 
+    !debug_print(["Resetto il conteggio delle carte."]);
+    -card_count(_);
+    +card_count(0).
 
 +cards_seen(List)[source(Sender)] <- 
     .print("Messaggio ricevuto da ", Sender, ": aggiungo alle carte lette:", List);
@@ -99,8 +104,6 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !tick;
     end_game;
     !debug_print(["###################### Done ######################"]);
-    -hand_value(V);
-    +hand_value(0);
     !tick;
     !start_play.
 
@@ -111,8 +114,6 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !tick;
     // end_game;
     !debug_print(["###################### Done ######################"]);
-    -hand_value(V);
-    +hand_value(0);
     !tick;
     !start_play.
 
@@ -122,8 +123,6 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !tick;
     end_game;
     !debug_print(["###################### Done ######################"]);
-    -hand_value(V);
-    +hand_value(0);
     !tick;
     !start_play.
 
