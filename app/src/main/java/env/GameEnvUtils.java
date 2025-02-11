@@ -1,5 +1,6 @@
 package env;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -7,8 +8,11 @@ import blackjack.AppWindow;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
 import blackjack.Players.Dealer;
+import jason.asSyntax.ListTerm;
+import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
 import jason.asSyntax.NumberTerm;
+import jason.asSyntax.NumberTermImpl;
 import jason.asSyntax.Structure;
 
 public class GameEnvUtils {
@@ -50,6 +54,15 @@ public class GameEnvUtils {
 			final int scoreDealer = dealer.hand.getTotal();
 			twentyOneEnvironment.addPercept(agName, Literal.parseLiteral("dealer_score(" + scoreDealer + ")"));
 		}
+	}
+
+	public static void sendToAgentHandToCount(final TwentyOneEnvironment twentyOneEnvironment, final String agName,
+			final List<Integer> cardValues) {
+			 final ListTerm cardList = new ListTermImpl();
+                    for (final Integer card : cardValues) {
+                        cardList.add(new NumberTermImpl(card));
+                    }
+			 twentyOneEnvironment.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
 	}
 
 }

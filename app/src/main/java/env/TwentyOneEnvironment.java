@@ -1,7 +1,9 @@
 package env;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -9,6 +11,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
+import blackjack.Cards.Card;
 import blackjack.EventListener;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
@@ -73,17 +76,35 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_busted(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_score(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
+            this.removePerceptsByUnif(agName, Literal.parseLiteral("update_counts(_)"));
             return true;
         }
         if ("deal".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.DEAL);
             //non dovbrebbe essere possibile bustare al deal...... quindi aggiorno le carte
             GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
+                            .collect(Collectors.toList()));
             return true;
         }
         if("hit".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.HIT);
             GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            // Conto la carta che ho appena pescato
+            final List<Integer> values = this.gamePanel.getPlayer().hand.stream()
+                    .map(Card::getValue)  
+                    .collect(Collectors.toList());  
+            final Integer lastValue = values.isEmpty() ? null : values.get(values.size() - 1);
+            final List<Integer> lastValueList = lastValue != null ? List.of(lastValue) : List.of();
+            GameEnvUtils.sendToAgentHandToCount(this, agName, lastValueList);
+    //         try {
+    // // Attendi per 2 secondi (2000 millisecondi)
+    // Thread.sleep(2000);
+    // this.logger.log(Level.INFO, "Woke up after 2 seconds!");
+    //         } catch (final InterruptedException e) {
+    //             e.printStackTrace();
+    //         }
+
             // GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
             // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             return true;
@@ -102,7 +123,9 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
 
 	@Override
 	public void onEvent(final String message) {
-        
+        // if("player_card".equals(message)){
+        //     this.logger.log(Level.INFO, "Aggiorno le carte del giocatore");
+        // }
 	}
 
 }
