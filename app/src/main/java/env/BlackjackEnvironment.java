@@ -114,8 +114,6 @@ public class BlackjackEnvironment extends Environment implements EventListener {
                         this.addPercept(HILO.name, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
                     }
                     //DEALER agent update cards
-                    //TODO non sarebbe meglio che il dealer gliele comunichi con un messaggio?
-                    //Probabilmente non andrebbe a diventare concorrente con l'update_counts dell'agente HILO
                     final ListTerm cardList = new ListTermImpl();
                     for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
                             .collect(Collectors.toList())) {
@@ -123,34 +121,46 @@ public class BlackjackEnvironment extends Environment implements EventListener {
                     }
                     //formalmente la prima non la vede il player ma l'environemnt si
                     logger.log(Level.INFO,
-                            "Le carte della prima mano del dealer sono: " + cardList.subList(1, cardList.size()).toString());
+                            "Le carte della prima mano del dealer sono: "
+                                    + cardList.subList(1, cardList.size()).toString());
 
                     this.addPercept(DEALER.name, Literal
                             .parseLiteral("tell_cards(" + cardList.subList(1, cardList.size()).toString() + ")"));
+                    //Check Hand Value
+                    logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
+                    logger.log(Level.INFO,
+                            "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
+                                    + this.gamePanel.getPlayer().hand.isBust());
+                    logger.log(Level.INFO,
+                            "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
+                                    + this.gamePanel.getDealer().hand.isBust());
+                    this.checkIfBusted(agName, act);
                     return true;
                 case "end_game":
                     this.getEndPlayerCardList();
                     return true;
                 case "stand":
-                     logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
+                    logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
                     this.appWindow.actionPerformed(GameCommand.STAND);
-                    final ListTerm dealerCardList = new ListTermImpl();
-                    for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
-                            .collect(Collectors.toList())) {
-                        dealerCardList.add(new NumberTermImpl(card));
-                    }
-                    logger.log(Level.INFO, "Le carte del dealer sono: " + dealerCardList.toString());
-                    dealerCardList.remove(1);
-                    logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + dealerCardList.toString());
-                    this.addPercept(DEALER.name, Literal
-                            .parseLiteral("tell_cards(" + dealerCardList.toString() + ")"));
+                    // final ListTerm dealerCardList = new ListTermImpl();
+                    // for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
+                    //         .collect(Collectors.toList())) {
+                    //     dealerCardList.add(new NumberTermImpl(card));
+                    // }
+                    // logger.log(Level.INFO, "Le carte del dealer sono: " + dealerCardList.toString());
+                    // this.addPercept(DEALER.name, Literal
+                    //         .parseLiteral("tell_hand(" + this.gamePanel.getDealer().hand.getTotal() + ")"));
+                    // dealerCardList.remove(1);
+                    // logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + dealerCardList.toString());
+                    // this.addPercept(DEALER.name, Literal
+                    //         .parseLiteral("tell_cards(" + dealerCardList.toString() + ")"));
                     // this.executeAction(agName, new Structure(Literal.parseLiteral("end_game")));
                     //!duplicato???? ma almeno no si blocca ad un han_value random.......
-                    this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
+                    // this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
                     this.getEndPlayerCardList();
                     return true;
                 default:
-                    if(DEALER.getName().equals(agName)) {
+                    if (DEALER.getName().equals(agName)) {
                         return this.manageDealerAction(agName, action, act);
                     } else {
                         return this.manageGamblerAction(agName, action, act);
@@ -169,10 +179,25 @@ public class BlackjackEnvironment extends Environment implements EventListener {
             endDealerCardList .add(new NumberTermImpl(card));
         }
         logger.log(Level.INFO, "Le carte del dealer sono: " + endDealerCardList .toString());
-        endDealerCardList .remove(1);
-        logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + endDealerCardList .toString());
+        logger.log(Level.INFO, "Gonna tell dealer hand: " + this.gamePanel.getDealer().hand.getTotal());
+        // final String percept = "tell_hand(" + this.gamePanel.getDealer().hand.getTotal() + ")";
+        // System.out.println("Sending percept: " + percept);
+        // System.out.println("Percetti del dealer: " + this.getPercepts(DEALER.name));
+
+        // this.addPercept(DEALER.name, Literal
+        //                     .parseLiteral("tell_hand(" + this.gamePanel.getDealer().hand.getTotal() + ")"));
+
+        // System.out.println("Percetti del dealer DOPO: " + this.getPercepts(DEALER.name));
+
+        //Fanculo messaggio da dealer si bloccava sempre
+        this.addPercept(HILO.name, Literal
+                            .parseLiteral("check_score(" + this.gamePanel.getDealer().hand.getTotal() + ")"));
+        System.out.println("Percetti del gambler dopo check_score: " + this.getPercepts(HILO.name));
         this.addPercept(DEALER.name, Literal
                 .parseLiteral("tell_cards(" + endDealerCardList .toString() + ")"));
+        System.out.println("Percetti del dealer dopo tell_cards: " + this.getPercepts(DEALER.name));
+        endDealerCardList.remove(1);
+        logger.log(Level.INFO, "Le carte del dealer mai state viste sono: " + endDealerCardList .toString());
         //agents register his hadn at end of the game
         final ListTerm endPlayerCardList = new ListTermImpl();
         for (final Integer card : this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
@@ -183,7 +208,7 @@ public class BlackjackEnvironment extends Environment implements EventListener {
         this.addPercept(HILO.name, Literal
                 .parseLiteral("update_counts(" + endPlayerCardList.toString() + ")"));
 
-        this.addPercept(HILO.name, Literal.parseLiteral("hand_value(0)"));
+        // this.addPercept(HILO.name, Literal.parseLiteral("hand_value(0)"));
     }
 
 
@@ -235,13 +260,12 @@ public class BlackjackEnvironment extends Environment implements EventListener {
                 logger.log(Level.INFO,
                         "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
                         + this.gamePanel.getDealer().hand.isBust());
-                this.checkIfBusted(agName);
+                this.checkIfBusted(agName, "check_hand_value");
                 return true;
             case "askCard":
                 logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta.");
                 logger.log(Level.INFO,
                         "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
-                System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
                 if (HILO.getName().equals(agName)) {
                     final int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
                     logger.log(Level.INFO, "Mano agente: " + agName + " before: " + beforeScore);
@@ -268,7 +292,7 @@ public class BlackjackEnvironment extends Environment implements EventListener {
                 logger.log(Level.INFO,
                         "Il Dealer e\' stato sconfitto dopo ask_card?: "
                         + this.gamePanel.getDealer().hand.isBust());
-                this.checkIfBusted(agName);
+                this.checkIfBusted(agName, act);
                 return true;
             // case "stand":
             //     logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
@@ -321,22 +345,21 @@ public class BlackjackEnvironment extends Environment implements EventListener {
             //         this.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
             //     }
             //     return true;
-            case "check_hand_value":
-                logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto il valore della mano.");
-                logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
-                logger.log(Level.INFO,
-                        "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
-                        + this.gamePanel.getPlayer().hand.isBust());
-                logger.log(Level.INFO,
-                        "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
-                        + this.gamePanel.getDealer().hand.isBust());
-                this.checkIfBusted(agName);
-                return true;
+            // case "check_hand_value":
+            //     logger.log(Level.WARNING, "L'agente " + agName + " ha richiesto il valore della mano.");
+            //     logger.log(Level.INFO, "Valore della mano: " + this.gamePanel.getPlayer().hand.getTotal());
+            //     logger.log(Level.INFO,
+            //             "Il giocatore e\' stato sconfitto dopo il check_hand_value?: "
+            //             + this.gamePanel.getPlayer().hand.isBust());
+            //     logger.log(Level.INFO,
+            //             "Il Dealer e\' stato sconfitto dopo il check_hand_value?: "
+            //             + this.gamePanel.getDealer().hand.isBust());
+            //     this.checkIfBusted(agName, "check_hand_value");
+            //     return true;
             case "askCard":
-                logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta.");
+                logger.log(Level.WARNING, "L'agente " + agName + " richiede una carta e la sua mano vale: " + this.gamePanel.getPlayer().hand.getTotal() );
                 logger.log(Level.INFO,
                         "Valore della mano prima: " + this.gamePanel.getPlayer().hand.getTotal());
-                System.out.println("agName.indexOf('hilo'): " + agName.indexOf("hilo"));
                 if (HILO.getName().equals(agName)) {
                     int beforeScore = this.gamePanel.getPlayer().hand.getTotal();
                     logger.log(Level.INFO, "Mano agente: " + agName + " before: " + beforeScore);
@@ -364,7 +387,8 @@ public class BlackjackEnvironment extends Environment implements EventListener {
                 logger.log(Level.INFO,
                         "Il Dealer e\' stato sconfitto dopo ask_card?: "
                         + this.gamePanel.getDealer().hand.isBust());
-                this.checkIfBusted(agName);
+                // this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
+                this.checkIfBusted(agName, act);
                 return true;
             // case "stand":
             //     logger.log(Level.WARNING, "L'agente " + agName + " ha deciso di stare.");
@@ -377,15 +401,18 @@ public class BlackjackEnvironment extends Environment implements EventListener {
     }
 
     @SuppressWarnings("LoggerStringConcat")
-    private void checkIfBusted(final String agName) {
-        this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
+    private void checkIfBusted(final String agName, final String preAction) {
+        // this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
+        this.logger.log(Level.INFO, "Il controllo chi sballa dopo: " +  preAction);
         if (!this.gamePanel.getPlayer().hand.isBust()) {
-            logger.log(Level.INFO, "Il giocatore non ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
+            logger.log(Level.INFO, "Il giocatore " + agName + " non ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
             this.addPercept(agName,
                     Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+
+        System.out.println("Percetti del gambler dopo aver mandato la mia mano: " + this.getPercepts(HILO.name));
         } else {
             logger.log(Level.INFO,
-                    "Il giocatore ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
+                    "Il giocatore  " + agName + " ha sballato, val: " + this.gamePanel.getPlayer().hand.getTotal());
                     //aggiorno le carte viste dal player nel caso in cui il dealer sbanca
                     final ListTerm cardList = new ListTermImpl();
                     for (final Integer card : this.gamePanel.getDealer().hand.stream().map(Card::getValue)
@@ -400,7 +427,7 @@ public class BlackjackEnvironment extends Environment implements EventListener {
                             .parseLiteral("tell_cards(" + cardList.subList(1, cardList.size()).toString() + ")"));
                     // logger.log(Level.INFO, "Deal received by everyone");
             this.addPercept(agName,
-                    Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")"));
+                    Literal.parseLiteral("hand_value(" + this.gamePanel.getPlayer().hand.getTotal() + ")")); //Discutibile
         }
     }
 
@@ -409,6 +436,10 @@ public class BlackjackEnvironment extends Environment implements EventListener {
         if ("Deck".equals(message)) {
             this.addPercept(HILO.name,
                     Literal.parseLiteral("reset_card_count"));
+        }
+        if ("dealer_bust".equals(message)) {
+            this.addPercept(HILO.name, Literal.parseLiteral("check_score(22)"));
+            // this.addPercept(DEALER.name, Literal.parseLiteral("tell_hand(22)")); //!Sarebbe meglio creare una cosa a parte
         } else {
             logger.log(Level.WARNING, "Evento non riconosciuto: " + message);
         }

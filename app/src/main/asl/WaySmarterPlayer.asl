@@ -4,6 +4,10 @@
 state(start).
 game(10).
 card_count(0).  // Iniziamo con un conteggio di 0
+winned_games(0).
+lost_games(0).
+tied_games(0).
+
 
 
 !start.
@@ -14,6 +18,33 @@ card_count(0).  // Iniziamo con un conteggio di 0
 +!tick <- 
     .wait(2000).
 
++!resume_stat <-
+	?winned_games(W);
+	?lost_games(L);
+	?tied_games(T);
+	.print("Statistiche: ");
+	.print("Partite vinte: ", W);
+	.print("Partite perse: ", L);
+	.print("Partite pareggiate: ", T).
+
++!win <-
+    ?winned_games(W);
+    NewW = W + 1;
+    -winned_games(W);
+    +winned_games(NewW).
+
++!lose <-
+    ?lost_games(L);
+    NewL = L + 1;
+    -lost_games(L);
+    +lost_games(NewL).
+
++!tie <-
+    ?tied_games(T);
+    NewT = T + 1;
+    -tied_games(T);
+    +tied_games(NewT).
+
 //********************************************************************* CORE ********************************************************************* */
 
 // +!hand_value(V)<- 
@@ -23,15 +54,22 @@ card_count(0).  // Iniziamo con un conteggio di 0
 // 	// ?hand_value(V);
 // 	.print("My hand value: ", V).
 
+// Strategia di puntata basata sul conteggio
++!decide_bet <-
+    ?card_count(C);
+    .print("Decido la puntata.......", "C vale: ", C);
+    if ( C > 2 ) { .print("Punto: ", 100); bet(100) } 
+    if ( C < -1 ) { .print("Punto: ", 10); bet(10) } 
+    if ( C <= 2 & C >= -1 ) { .print("Punto: ", 25); bet(25)}.
+
 
 +!bet_money : state(bet_check) <-
     .print("Betting money");
-    bet(10);
-	.print("Betted so i deal");
+	!decide_bet;
 	deal.
 
-
 +!start <-
+	!resume_stat;
 	clear;
 	?game(C);
 	if(C > 0){
@@ -110,7 +148,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
 	.print("Dealer busted: ", B);
 	if(B){
 		.print("Dealer busted");
-		// !win;
+		!win;
 	} else {
 		while(not dealer_score(S)) {
 			.print("Waiting for dealer score");
@@ -118,17 +156,18 @@ card_count(0).  // Iniziamo con un conteggio di 0
 		};
 		?dealer_score(S);
 		.print("Dealer hand value: ", S);
-		// if(S > V){
-		// 	.print("Dealer win");
-		// 	// !lose;
-		// }
-		// if(S == V){
-		// 	.print("Draw");
-		// 	// !draw;
-		// } else {
-		// 	.print("I win");
-		// 	// !win;
-		// };
+		if(S > V){
+			.print("Dealer win");
+			!lose;
+		}
+		if(S == V){
+			.print("Draw");
+			!tie;
+		}
+		if (S < V){ 
+			.print("I win");
+			!win;
+		};
 	};
 	-state(_);
 	+state(start);
@@ -139,6 +178,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
 	.print("BlackJack!!! ", V);
 	-state(_);
 	+state(start);
+	!win;
 	!start.
 
 // ho perso
@@ -146,6 +186,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
 	.print("Ho sballato");
 	-state(_);
 	+state(start);
+	!lose;
 	!start.
 
 +!decide_action(V, C) <- 
