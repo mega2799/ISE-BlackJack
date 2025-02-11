@@ -1,0 +1,12 @@
+MAS smartplayer {
+
+	infrastructure: Centralised // no distribution, the whole MAS runs in the same host
+
+	environment: env.TwentyOneEnvironment(1000, 1) // (fresca, debug)
+
+	agents:
+		smartplayer smartplayer ;
+
+	aslSourcePath:
+		"src/main/asl";
+}
