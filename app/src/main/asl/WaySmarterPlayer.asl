@@ -2,7 +2,7 @@
 
 //Belief iniziali
 state(start).
-game(10).
+game(2).
 card_count(0).  // Iniziamo con un conteggio di 0
 winned_games(0).
 lost_games(0).
@@ -46,13 +46,6 @@ tied_games(0).
     +tied_games(NewT).
 
 //********************************************************************* CORE ********************************************************************* */
-
-// +!hand_value(V)<- 
-// 	.print("Deal done, current state: ", state(_));
-// 	-state(_);
-// 	+state(hand_manage);
-// 	// ?hand_value(V);
-// 	.print("My hand value: ", V).
 
 // Strategia di puntata basata sul conteggio
 +!decide_bet <-
@@ -139,7 +132,8 @@ tied_games(0).
 +!decide_action(V, C) : V >= (18 - C) & V < 21 <- 
 	.print("Valore mano: ", V, " | Card Count: ", C, " => Mi fermo!");
 	stand;
-	// !tick;
+	.wait(updating_card_count(false));
+	-updating_card_count(_);
 	while(not dealer_busted(B)) {
 		.print("Waiting for busting");
         .wait(200);
@@ -184,6 +178,9 @@ tied_games(0).
 // ho perso
 +!decide_action(V, C) : V > 21 <- 
 	.print("Ho sballato");
+	bust;
+	.wait(updating_card_count(false));
+	-updating_card_count(_);
 	-state(_);
 	+state(start);
 	!lose;

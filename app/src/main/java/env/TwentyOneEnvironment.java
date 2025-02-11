@@ -87,32 +87,41 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
                             .collect(Collectors.toList()));
             return true;
         }
-        if("hit".equals(act)) {
+        if ("hit".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.HIT);
             GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             // Conto la carta che ho appena pescato
             final List<Integer> values = this.gamePanel.getPlayer().hand.stream()
-                    .map(Card::getValue)  
-                    .collect(Collectors.toList());  
+                    .map(Card::getValue)
+                    .collect(Collectors.toList());
             final Integer lastValue = values.isEmpty() ? null : values.get(values.size() - 1);
             final List<Integer> lastValueList = lastValue != null ? List.of(lastValue) : List.of();
             GameEnvUtils.sendToAgentHandToCount(this, agName, lastValueList);
-    //         try {
-    // // Attendi per 2 secondi (2000 millisecondi)
-    // Thread.sleep(2000);
-    // this.logger.log(Level.INFO, "Woke up after 2 seconds!");
-    //         } catch (final InterruptedException e) {
-    //             e.printStackTrace();
-    //         }
+            //         try {
+            // // Attendi per 2 secondi (2000 millisecondi)
+            // Thread.sleep(2000);
+            // this.logger.log(Level.INFO, "Woke up after 2 seconds!");
+            //         } catch (final InterruptedException e) {
+            //             e.printStackTrace();
+            //         }
 
             // GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
             // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            return true;
+        }
+        if ("bust".equals(act)) {
+            // Conto le carte del dealer 
+            GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getDealer().hand.stream()
+                    .map(Card::getValue)
+                    .collect(Collectors.toList()));
             return true;
         }
         if("stand".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.STAND);
             // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
+            GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getDealer().hand.stream().map(Card::getValue)
+                                .collect(Collectors.toList()));
             // this.logger.log(Level.INFO, "Percepts: " + this.getPercepts(agName));
             // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             return true;
