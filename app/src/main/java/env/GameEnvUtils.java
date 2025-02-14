@@ -1,6 +1,8 @@
 package env;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,12 +59,29 @@ public class GameEnvUtils {
 	}
 
 	public static void sendToAgentHandToCount(final TwentyOneEnvironment twentyOneEnvironment, final String agName,
-			final List<Integer> cardValues) {
-			 final ListTerm cardList = new ListTermImpl();
-                    for (final Integer card : cardValues) {
-                        cardList.add(new NumberTermImpl(card));
-                    }
-			 twentyOneEnvironment.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
-	}
+            final List<Integer> cardValues) {
+        final ListTerm cardList = new ListTermImpl();
+        for (final Integer card : cardValues) {
+            cardList.add(new NumberTermImpl(card));
+        }
+        twentyOneEnvironment.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
+    }
+
+     public static Object findMode(final List<Object> list) {
+        logger.log(Level.INFO, "Calcolo della moda della lista: " + list);
+        final Map<Object, Integer> freqMap = new HashMap<>();
+        int maxCount = 0;
+        Object mode = null;
+
+        // Conta le occorrenze
+        for (final Object elem : list) {
+            freqMap.put(elem, freqMap.getOrDefault(elem, 0) + 1);
+            if (freqMap.get(elem) > maxCount) {
+                maxCount = freqMap.get(elem);
+                mode = elem;
+            }
+        }
+        return mode;
+    }
 
 }
