@@ -53,22 +53,16 @@ stopping_score(21).
 	.print("Chiedo consiglio per la puntata");
 	// ?card_count(C);
 	?game(G);
+	+consensuos(0);
     .broadcast(tell, suggest_bet(G));  // Chiede suggerimenti
-    // .wait(broadcast(tell, suggest_bet));  // Aspetta risposte
-	// .send(strategist, tell, suggest_bet);
-	// .send(aggressive, tell, suggest_bet);
-	// .send(adaptivestrategist, tell, suggest_bet);
-	.wait(4000);
-
+	.wait(consensuos(3));
+	-+consensuos(0);
     !aggregate_bets.
     // ?card_count(C);
-    // .print("Decido la puntata.......", "C vale: ", C);
-    // if ( C > 2 ) { .print("Punto: ", 100); bet(100) } 
-    // if ( C < -1 ) { .print("Punto: ", 10); bet(10) } 
-    // if ( C <= 2 & C >= -1 ) { .print("Punto: ", 25); bet(25)}.
 
-+suggested_bet(Bet, Stop) <- 
-    .print("Ricevuto suggerimento: Punto ", Bet, " - Stop a ", Stop);
++suggested_bet(Bet, Stop)[source(Sender)] : consensuos(X) <- 
+	-+consensuos(X + 1);
+    .print("Ricevuto suggerimento da ", Sender ,": Punto ", Bet, " - Stop a ", Stop, " N suggerimenti: ", X);
     -+bet_suggestion(Bet, Stop). 
 
 
