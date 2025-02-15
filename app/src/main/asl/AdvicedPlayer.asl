@@ -2,12 +2,14 @@
 
 //Belief iniziali
 state(start).
-game(3).
+game(1).
 card_count(0).  // Iniziamo con un conteggio di 0
 winned_games(0).
 lost_games(0).
 tied_games(0).
 
+
+stopping_score(21).
 
 
 !start.
@@ -49,7 +51,8 @@ tied_games(0).
 
 +!decide_bet <-
 	.print("Chiedo consiglio per la puntata");
-    .broadcast(tell, suggest_bet);  // Chiede suggerimenti
+	?card_count(C);
+    .broadcast(tell, suggest_bet(C + 69));  // Chiede suggerimenti
     // .wait(broadcast(tell, suggest_bet));  // Aspetta risposte
 	// .send(strategist, tell, suggest_bet);
 	// .send(aggressive, tell, suggest_bet);
@@ -99,6 +102,7 @@ tied_games(0).
 +!start <-
 	!resume_stat;
 	clear;
+	-stopping_score(_);
 	// -bet_suggestion(_, _);
 	-suggested_bet(_, _);
 	?game(C);
