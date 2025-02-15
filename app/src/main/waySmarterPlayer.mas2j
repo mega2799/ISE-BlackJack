@@ -1,12 +1,11 @@
-MAS gambler {
+MAS waysmarterplayer {
 
 	infrastructure: Centralised // no distribution, the whole MAS runs in the same host
 
-	environment: env.BlackjackEnvironment(1000, 1) // (fresca, debug)
+	environment: env.TwentyOneEnvironment(1000, 1) // (fresca, debug)
 
 	agents:
-		gamblerhilo gamblerhilo ;
-		dealer dealer ;
+		waysmarterplayer  waysmarterplayer;
 
 	aslSourcePath:
 		"src/main/asl";
