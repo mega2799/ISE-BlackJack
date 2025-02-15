@@ -20,7 +20,7 @@ import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
 
-public class TwentyOneEnvironment extends Environment implements EventListener {
+public class TwentyOneEnvironment extends Environment  {
    static final Logger logger = Logger.getLogger(TwentyOneEnvironment.class.getName());
     private AppWindow appWindow;
     private GamePanel gamePanel;
@@ -45,7 +45,6 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
         this.beatufiySwing();
         this.appWindow = new AppWindow(args.length > 0 ? Double.parseDouble(args[0]) : 1000);
         this.gamePanel = this.appWindow.getGamePanel();
-        this.gamePanel.addListener(this);
         
         logger.info("Inizializzazione completata.");
         // this.addPercept(Literal.parseLiteral("start"));
@@ -78,7 +77,6 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_score(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
             this.removePerceptsByUnif(Literal.parseLiteral("update_counts(_)"));
-            // this.removePerceptsByUnif(Literal.parseLiteral("suggested_bet(_)"));
             return true;
         }
         if ("deal".equals(act)) {
@@ -119,7 +117,6 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
         }
         if("stand".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.STAND);
-            // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
             //! Al posto di inviare 2 messaggi con liste diverse e creare problemi di sincronizzazione invio un solo messaggio con tutte le carte viste....
             final List<Integer> cardSeenValues = new ArrayList<>();
@@ -136,10 +133,4 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
         return false;
     }
 
-	@Override
-	public void onEvent(final String message) {
-        // if("player_card".equals(message)){
-        //     this.logger.log(Level.INFO, "Aggiorno le carte del giocatore");
-        // }
-	}
 }

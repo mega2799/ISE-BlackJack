@@ -1,4 +1,4 @@
-card_count(0).  // Iniziamo con un conteggio di 0
+card_count(0).
 
 +!lemme_count(H) <-
     ?card_count(C);
@@ -10,14 +10,11 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 +update_counts(List) <-
 	.print("counting cards: ", List);
-	// +updating_card_count(true);
 	for ( .member(I,List) ) {
 		.print("Count card: ", I);
 		!lemme_count(I);
     };
 	.print("Fine conteggio").
-	// +updating_card_count(false).
-    // ?card_count(C);
 
 +suggest_bet(G) <-  
     ?card_count(C);

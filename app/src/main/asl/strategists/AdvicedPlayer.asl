@@ -3,7 +3,7 @@
 //Belief iniziali
 state(start).
 game(2).
-card_count(0).  // Iniziamo con un conteggio di 0
+card_count(0).
 winned_games(0).
 lost_games(0).
 tied_games(0).
@@ -71,18 +71,14 @@ stopping_score(21).
     .findall(B, bet_suggestion(B, _), Bets);
     .findall(S, bet_suggestion(_, S), Stops);
     
-
-    // MostCommonBet = head(MostCommonBetList);
-    // MostCommonStop = head(MostCommonStopList);
 	.print("Bets: ", Bets);
 	.print("Stops: ", Stops);
-	//TODO ora prende il primo elemento della lista, ma bisogna fare la moda
-	.nth(0, Bets, MostCommonBet);
-	.nth(0, Stops, MostCommonStop);
-	//TODO test online
+	.sort(Bets, Bets);
+	.sort(Stops, Stops);
+	.nth(1, Bets, MostCommonBet);
+	.nth(1, Stops, MostCommonStop);
+	// la cosa migliore sarebbe fare la moda
 	-+stopping_score(MostCommonStop);
-	// -stopping_score(_);
-	// +stopping_score(MostCommonStop);
     .print("Decisione finale: Punto ", MostCommonBet, " e mi fermo a ", MostCommonStop);
     bet(MostCommonBet).
 
@@ -96,7 +92,7 @@ stopping_score(21).
 
 +!start <-
 	!resume_stat;
-	.wait(3000); // Aspetta che tutti abbiano contato le loro carte
+	.wait(3000);
 	clear;
 	// -bet_suggestion(_, _);
 	// -suggested_bet(_, _);
@@ -115,16 +111,7 @@ stopping_score(21).
 			.wait(200);
 		};
 		?hand_value(V);
-		// .wait(updating_card_count(false));
-		// -updating_card_count(_);
-		// while(not updating_card_count(_)) {
-		// 	.print("updating: ", Val);
-		// 	.print("Waiting for card count");
-		// 	.wait(200);
-		// };
-
 		-stopping_score(Stop);
-		// ?stopping_score(Stop);
 		.print("My hand value: ", V, " my stopping score: ", Stop);
 		!decide_action(V, Stop);
 	} else {
@@ -138,8 +125,6 @@ stopping_score(21).
 +!decide_action(V, Stop) : V < Stop & V < 21 <- 
     .print("Valore mano: ", V, " | Stopping point: ", Stop, " => Chiedo carta!");
 	hit;
-	// .wait(updating_card_count(false));
-	// -updating_card_count(_);
 	?hand_value(NewV);
 	.print("My hand value: ", NewV);
 	!decide_action(NewV, Stop).
@@ -148,8 +133,6 @@ stopping_score(21).
 +!decide_action(V, Stop) : V >= Stop & V < 21 <- 
 	.print("Valore mano: ", V, " | Stopping point: ", Stop, " => Mi fermo!");
 	stand;
-	// .wait(updating_card_count(false));
-	// -updating_card_count(_);
 	while(not dealer_busted(B)) {
 		.print("Waiting for busting");
         .wait(200);
@@ -196,8 +179,6 @@ stopping_score(21).
 +!decide_action(V, Stop) : V > 21 <- 
 	.print("Ho sballato");
 	bust;
-	// .wait(updating_card_count(false));
-	// -updating_card_count(_);
 	-state(_);
 	+state(start);
 	!lose;
