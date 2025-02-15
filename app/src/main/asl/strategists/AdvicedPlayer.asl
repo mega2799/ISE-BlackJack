@@ -61,7 +61,9 @@ stopping_score(21).
     // ?card_count(C);
 
 +suggested_bet(Bet, Stop)[source(Sender)] : consensuos(X) <- 
-	-+consensuos(X + 1);
+	// -+consensuos(X + 1);
+	-consensuos(X);
+	+consensuos(X + 1);
     .print("Ricevuto suggerimento da ", Sender ,": Punto ", Bet, " - Stop a ", Stop, " N suggerimenti: ", X);
     -+bet_suggestion(Bet, Stop). 
 
@@ -75,8 +77,8 @@ stopping_score(21).
 	.print("Stops: ", Stops);
 	.sort(Bets, Bets);
 	.sort(Stops, Stops);
-	.nth(1, Bets, MostCommonBet);
-	.nth(1, Stops, MostCommonStop);
+	.nth(0, Bets, MostCommonBet);
+	.nth(0, Stops, MostCommonStop);
 	// la cosa migliore sarebbe fare la moda
 	-+stopping_score(MostCommonStop);
     .print("Decisione finale: Punto ", MostCommonBet, " e mi fermo a ", MostCommonStop);
