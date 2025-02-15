@@ -1,6 +1,5 @@
 card_count(0).  // Iniziamo con un conteggio di 0
 
-
 +!lemme_count(H) <-
     ?card_count(C);
     if (H >= 2 & H <= 6) { NewCount = C + 1 };
@@ -16,7 +15,6 @@ card_count(0).  // Iniziamo con un conteggio di 0
 		.print("Count card: ", I);
 		!lemme_count(I);
     };
-    -update_counts(List);
 	.print("Fine conteggio").
 	// +updating_card_count(false).
     // ?card_count(C);
@@ -28,3 +26,4 @@ card_count(0).  // Iniziamo con un conteggio di 0
     if (C < -1) { Bet = 10; Stop = 16 }  // Conteggio basso → più prudente
     if (C >= -1 & C <= 2) { Bet = 25; Stop = 18 }  // Conteggio medio → moderato
     .send(advicedPlayer, tell, suggested_bet(Bet, Stop)).
+

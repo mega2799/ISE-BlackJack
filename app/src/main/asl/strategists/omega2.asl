@@ -1,11 +1,13 @@
 card_count(0).  // Iniziamo con un conteggio di 0
 
-
 +!lemme_count(H) <-
     ?card_count(C);
-    if (H >= 2 & H <= 6) { NewCount = C + 1 };
-    if (H >= 7 & H <= 9) { NewCount = C + 0 };
-    if (H >= 10 | H == 1) { NewCount = C - 1 };
+    if (H >= 4 & H <= 6) { NewCount = C + 2 };
+    if (H >= 2 & H <= 3) { NewCount = C + 1 };
+    if (H == 7) { NewCount = C + 1 };
+    if (H == 8) { NewCount = C + 0 };
+    if (H == 9) { NewCount = C - 1 };
+    if (H >= 10 | H == 1) { NewCount = C - 2 };
     -card_count(C);
     +card_count(NewCount).
 
@@ -16,7 +18,6 @@ card_count(0).  // Iniziamo con un conteggio di 0
 		.print("Count card: ", I);
 		!lemme_count(I);
     };
-    -update_counts(List);
 	.print("Fine conteggio").
 	// +updating_card_count(false).
     // ?card_count(C);
@@ -28,3 +29,5 @@ card_count(0).  // Iniziamo con un conteggio di 0
     if (C < -1) { Bet = 10; Stop = 16 }  // Conteggio basso → più prudente
     if (C >= -1 & C <= 2) { Bet = 25; Stop = 18 }  // Conteggio medio → moderato
     .send(advicedPlayer, tell, suggested_bet(Bet, Stop)).
+
+

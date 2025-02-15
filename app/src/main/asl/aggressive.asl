@@ -1,4 +1,3 @@
-
 card_count(0).  // Iniziamo con un conteggio di 0
 
 // @waitfor

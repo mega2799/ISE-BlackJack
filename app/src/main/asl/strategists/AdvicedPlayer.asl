@@ -88,6 +88,8 @@ stopping_score(21).
 	//TODO ora prende il primo elemento della lista, ma bisogna fare la moda
 	.nth(0, Bets, MostCommonBet);
 	.nth(0, Stops, MostCommonStop);
+	-stopping_score(_);
+	+stopping_score(MostCommonStop);
     .print("Decisione finale: Punto ", MostCommonBet, " e mi fermo a ", MostCommonStop);
     bet(MostCommonBet).
 

@@ -1,5 +1,6 @@
 package env;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,37 +102,33 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             final List<Integer> lastValueList = lastValue != null ? List.of(lastValue) : List.of();
             GameEnvUtils.sendToAgentHandToCount(this, agName, lastValueList);
             }
-            //         try {
-            // // Attendi per 2 secondi (2000 millisecondi)
-            // Thread.sleep(2000);
-            // this.logger.log(Level.INFO, "Woke up after 2 seconds!");
-            //         } catch (final InterruptedException e) {
-            //             e.printStackTrace();
-            //         }
-
-            // GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
-            // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             return true;
         }
         if ("bust".equals(act)) {
+            final List<Integer> cardSeenValues = new ArrayList<>();
             // Conto le carte del dealer 
-            GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getDealer().hand.stream()
-                    .map(Card::getValue)
-                    .collect(Collectors.toList()));
+            cardSeenValues.addAll(this.gamePanel.getDealer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
+            if(!"waysmarterplayer".equals(agName) && !"smartplayer".equals(agName)){
+                //aggiungo anche le carte del giocatore a fine mano
+                cardSeenValues.addAll(this.gamePanel.getPlayer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
+            }
+            GameEnvUtils.sendToAgentHandToCount(this, agName, cardSeenValues);
+
             return true;
         }
         if("stand".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.STAND);
             // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
-            GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getDealer().hand.stream().map(Card::getValue)
-                                .collect(Collectors.toList()));
+            //! Al posto di inviare 2 messaggi con liste diverse e creare problemi di sincronizzazione invio un solo messaggio con tutte le carte viste....
+            final List<Integer> cardSeenValues = new ArrayList<>();
+            // aggiunto le carte del dealer
+            cardSeenValues.addAll(this.gamePanel.getDealer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
             if(!"waysmarterplayer".equals(agName) && !"smartplayer".equals(agName)){
-                GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
-                                .collect(Collectors.toList()));
+                //aggiungo anche le carte del giocatore a fine mano
+                cardSeenValues.addAll(this.gamePanel.getPlayer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
             }
-            // this.logger.log(Level.INFO, "Percepts: " + this.getPercepts(agName));
-            // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            GameEnvUtils.sendToAgentHandToCount(this, agName, cardSeenValues);
             return true;
         }
 
@@ -144,5 +141,4 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
         //     this.logger.log(Level.INFO, "Aggiorno le carte del giocatore");
         // }
 	}
-
 }
