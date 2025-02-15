@@ -50,11 +50,23 @@ card_count(0).  // Iniziamo con un conteggio di 0
 	!debug_print(["Informo il player della la carta: ", H]);
 	// ?card_count(C);
     !send_message(gamblerhilo, cards_seen([H]));
+    -tell_cards(_);
 	+tell_cards(T).
+
+
+
++tell_hand(V) <-
+	!debug_print(["Informo il player della mia mano: ", V]);
+    !send_message(gamblerhilo, check_score(V)).
+
 
 
 +!send_message(Receiver, Content) <- 
     .send(Receiver, tell, Content).
+
++!check_percepts <- 
+    ?tell_hand(X);
+    .print("DEBUG: Percetto tell_hand ricevuto con valore ", X).
 
 
 //********************************************************************* Gambler hand manage ********************************************************************* */
@@ -113,8 +125,9 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 +!start_play: true <-
     !debug_print(["Inizio partita."]);
+    !check_percepts.
     // !decide_bet;
-    !tick.
+    // !tick.
     // deal;
     // !tick;
     // check_hand_value.

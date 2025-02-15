@@ -1,3 +1,4 @@
+
 // Agente Blackjack con strategia di conteggio delle carte (Hi-Lo)
 
 // Beliefs iniziali
@@ -6,15 +7,12 @@ winned_games(0).
 lost_games(0).
 tied_games(0).
 
-state(start).
 // debug_mode(on).
 
 //********************************************************************* UTILITIES ********************************************************************* */
 +!debug_print([])  : debug_mode(on) <- .print("DEBUG: ").
 
-+!debug_print([H])  : debug_mode(on) <- 
-    ?state(S);
-    .print("DEBUG: ", S ," ",H).
++!debug_print([H])  : debug_mode(on) <- .print("DEBUG: ", H).
 
 // **Piano di fallback** per quando debug_mode è off: NON STAMPA NULLA!
 +!debug_print(_) : debug_mode(off) <- true.
@@ -23,8 +21,7 @@ state(start).
 // +?debug_print([]) <- true.
 
 +!debug_print([H|T])  : debug_mode(on) <- 
-    ?state(S);
-    .concat("DEBUG: ", S, " ", H, Msg);
+    .concat("DEBUG: ", H, Msg);
     !debug_print_helper(Msg, T).
 
 +!debug_print_helper(Msg, []) <- 
@@ -59,23 +56,19 @@ state(start).
 +cards_seen(List)[source(Sender)] <- 
     .print("Messaggio ricevuto da ", Sender, ": aggiungo alle carte lette:", List);
     +update_counts(List).
-    // -cards_seen(_).
 
-+update_counts([]) <- 
-    !debug_print(["Nessuna carta da aggiornare."]).
-    // -update_counts(_).
++update_counts([]) <- !debug_print(["Nessuna carta da aggiornare."]).
 
 +update_counts([H|T]) <-
-    // !debug_print(["Aggiorno il conteggio per la carta: ", H]);
+    !debug_print(["Aggiorno il conteggio per la carta: ", H]);
     ?card_count(C);
     if (H >= 2 & H <= 6) { NewCount = C + 1 };
     if (H >= 7 & H <= 9) { NewCount = C + 0 };
     if (H >= 10 | H == 1) { NewCount = C - 1 };
-    // !debug_print(["Vecchio conteggio: ", C]);
-    // !debug_print(["Nuovo conteggio: ", NewCount]);
+    !debug_print(["Vecchio conteggio: ", C]);
+    !debug_print(["Nuovo conteggio: ", NewCount]);
     -card_count(C);
     +card_count(NewCount);
-    // -update_counts(_);       
     +update_counts(T).
 
 
@@ -98,9 +91,6 @@ state(start).
 
 //TODO inserire qui il punto di controllo nel caso in cui il dealer sia busted e io vinca automaticamente
 +hand_value(V) <- 
-    .print("PORCO DIO");
-    -state(_);
-    +state(check_hand_value);
     !debug_print(["La mia mano ha valore ", V]);
     ?card_count(C);
     !debug_print(["Il mio conteggio: ", C]);
@@ -109,16 +99,12 @@ state(start).
 
 // chiedo carta soltanto se sicuro prenderla 
 +!decide_action(V, C) : V < (18 - C) & V < 21 <- 
-    -state(_);
-    +state(ask_card);
     !debug_print(["Valore mano: ", V, " | Card Count: ", C, " => Chiedo carta!"]);
     !tick;
     !ask_card.
 
 // stare al gioco e rischioso quindi mi fermo
 +!decide_action(V, C) : V >= (18 - C) & V < 21 <- 
-    // -state(_);
-    // +state(stand);
     !debug_print(["Valore mano: ", V, " | Card Count: ", C, " => Mi fermo!"]);
     stand.
     // !end_game_routine.
@@ -151,16 +137,16 @@ state(start).
     // !tick;
     // !start_play.
 
-+!ask_card <-
++!ask_card: true <-
     !tick;
     !debug_print(["Chiedo una carta."]);
     askCard.
 
 //********************************************************************* Game manage ********************************************************************* */
 
-+check_score(D): state(check_hand_value) | start(ask_card) <-
++check_score(D) <-
     !debug_print(["Il dealer ha fatto ", D, " punti."]);
-    -hand_value(V);
+    ?hand_value(V);
     !debug_print(["Il mio score ", V, " punti."]);
     //TODO manca il caso blackJack
     if (D > 21 | V > D) { !debug_print(["Ho vinto!"]); +win }
@@ -169,15 +155,13 @@ state(start).
     !end_game_routine.
 
 +!end_game_routine <-
-    -state(_);
-    +state(start);
     !tick;
-    // +hand_value(0);
+    -hand_value(_);
+    +hand_value(0);
     end_game;
-    !debug_print(["###################### Done ######################"]);
+    !debug_print(["###################### Done ######################"]).
     // !tick;
-    !start_play.
-
+    // !start_play.
 
 +!win <-
     ?winned_games(W);
@@ -200,7 +184,7 @@ state(start).
     +tied_games(NewT);
     !debug_print(["Partite pareggiate: ", NewT]).
 
-+!start_play : true<-
++!start_play : true <-
     !debug_print(["Inizio partita."]);
     !decide_bet;
     !tick;

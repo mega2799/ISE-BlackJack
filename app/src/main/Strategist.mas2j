@@ -1,0 +1,15 @@
+MAS strategistplayers {
+
+	infrastructure: Centralised // no distribution, the whole MAS runs in the same host
+
+	environment: env.TwentyOneEnvironment(1000, 1) // (fresca, debug)
+
+	agents:
+		advicedPlayer  advicedPlayer;
+		strategist  strategist;
+		aggressive aggressive;
+		adaptivestrategist adaptivestrategist;
+
+	aslSourcePath:
+		"src/main/asl";
+}

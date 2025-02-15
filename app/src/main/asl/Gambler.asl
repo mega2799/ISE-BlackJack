@@ -1,3 +1,6 @@
+//https://www.codemotion.com/
+//https://www.hackinbo.it/
+//https://github.com/ildoc/awesome-italy-events
 
 +hand_value(0).
 
