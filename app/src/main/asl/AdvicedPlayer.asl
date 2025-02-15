@@ -51,8 +51,8 @@ stopping_score(21).
 
 +!decide_bet <-
 	.print("Chiedo consiglio per la puntata");
-	?card_count(C);
-    .broadcast(tell, suggest_bet(C + 69));  // Chiede suggerimenti
+	// ?card_count(C);
+    .broadcast(tell, suggest_bet);  // Chiede suggerimenti
     // .wait(broadcast(tell, suggest_bet));  // Aspetta risposte
 	// .send(strategist, tell, suggest_bet);
 	// .send(aggressive, tell, suggest_bet);
@@ -101,8 +101,8 @@ stopping_score(21).
 
 +!start <-
 	!resume_stat;
+	.wait(3000); // Aspetta che tutti abbiano contato le loro carte
 	clear;
-	-stopping_score(_);
 	// -bet_suggestion(_, _);
 	-suggested_bet(_, _);
 	?game(C);
@@ -120,16 +120,18 @@ stopping_score(21).
 			.wait(200);
 		};
 		?hand_value(V);
-		.print("My hand value: ", V);
-		.wait(updating_card_count(false));
-		-updating_card_count(_);
+		// .wait(updating_card_count(false));
+		// -updating_card_count(_);
 		// while(not updating_card_count(_)) {
 		// 	.print("updating: ", Val);
 		// 	.print("Waiting for card count");
 		// 	.wait(200);
 		// };
 
-		!decide_action(V, 0);
+		-stopping_score(Stop);
+		// ?stopping_score(Stop);
+		.print("My hand value: ", V, " my stopping score: ", Stop);
+		!decide_action(V, Stop);
 	} else {
 		.print("Game Over");
 	}.
@@ -137,44 +139,27 @@ stopping_score(21).
 //********************************************************************* Card count ********************************************************************* */
 
 
-+!lemme_count(H) <-
-    ?card_count(C);
-    if (H >= 2 & H <= 6) { NewCount = C + 1 };
-    if (H >= 7 & H <= 9) { NewCount = C + 0 };
-    if (H >= 10 | H == 1) { NewCount = C - 1 };
-    -card_count(C);
-    +card_count(NewCount).
 
-+update_counts(List) <-
-	.print("counting cards: ", List);
-	+updating_card_count(true);
-	for ( .member(I,List) ) {
-		.print("Count card: ", I);
-		!lemme_count(I);
-    };
-	.print("Fine conteggio");
-	+updating_card_count(false).
-    // ?card_count(C);
 
 //********************************************************************* Gambler hand manage ********************************************************************* */
 
     
 // chiedo carta soltanto se sicuro prenderla 
-+!decide_action(V, C) : V < (18 - C) & V < 21 <- 
-    .print("Valore mano: ", V, " | Card Count: ", C, " => Chiedo carta!");
++!decide_action(V, Stop) : V < Stop & V < 21 <- 
+    .print("Valore mano: ", V, " | Stopping point: ", Stop, " => Chiedo carta!");
 	hit;
-	.wait(updating_card_count(false));
-	-updating_card_count(_);
+	// .wait(updating_card_count(false));
+	// -updating_card_count(_);
 	?hand_value(NewV);
 	.print("My hand value: ", NewV);
-	!decide_action(NewV, C).
+	!decide_action(NewV, Stop).
 
 // stare al gioco e rischioso quindi mi fermo
-+!decide_action(V, C) : V >= (18 - C) & V < 21 <- 
-	.print("Valore mano: ", V, " | Card Count: ", C, " => Mi fermo!");
++!decide_action(V, Stop) : V >= Stop & V < 21 <- 
+	.print("Valore mano: ", V, " | Stopping point: ", Stop, " => Mi fermo!");
 	stand;
-	.wait(updating_card_count(false));
-	-updating_card_count(_);
+	// .wait(updating_card_count(false));
+	// -updating_card_count(_);
 	while(not dealer_busted(B)) {
 		.print("Waiting for busting");
         .wait(200);
@@ -209,23 +194,24 @@ stopping_score(21).
 	!start.
 
 //Jackpot si incassa
-+!decide_action(V, C) : V == 21 <- 
++!decide_action(V, Stop) : V == 21 <- 
 	.print("BlackJack!!! ", V);
+	stand;
 	-state(_);
 	+state(start);
 	!win;
 	!start.
 
 // ho perso
-+!decide_action(V, C) : V > 21 <- 
++!decide_action(V, Stop) : V > 21 <- 
 	.print("Ho sballato");
 	bust;
-	.wait(updating_card_count(false));
-	-updating_card_count(_);
+	// .wait(updating_card_count(false));
+	// -updating_card_count(_);
 	-state(_);
 	+state(start);
 	!lose;
 	!start.
 
-+!decide_action(V, C) <- 
-	.print("Valore mano: ", V, " | Card Count: ", C, " => Perche son ").
++!decide_action(V, Stop) <- 
+	.print("Valore mano: ", V, " | Stopping point: ", Stop, " => Perche sono qui?").

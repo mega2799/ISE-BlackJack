@@ -11,10 +11,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
-import blackjack.Cards.Card;
 import blackjack.EventListener;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
+import blackjack.Cards.Card;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
@@ -76,20 +76,23 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_busted(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_score(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
-            this.removePerceptsByUnif(agName, Literal.parseLiteral("update_counts(_)"));
+            this.removePerceptsByUnif(Literal.parseLiteral("update_counts(_)"));
             return true;
         }
         if ("deal".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.DEAL);
             //non dovbrebbe essere possibile bustare al deal...... quindi aggiorno le carte
             GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            if("waysmarterplayer".equals(agName) || "smartplayer".equals(agName)){
             GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
                             .collect(Collectors.toList()));
+            }
             return true;
         }
         if ("hit".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.HIT);
             GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            if("waysmarterplayer".equals(agName) || "smartplayer".equals(agName)){
             // Conto la carta che ho appena pescato
             final List<Integer> values = this.gamePanel.getPlayer().hand.stream()
                     .map(Card::getValue)
@@ -97,6 +100,7 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             final Integer lastValue = values.isEmpty() ? null : values.get(values.size() - 1);
             final List<Integer> lastValueList = lastValue != null ? List.of(lastValue) : List.of();
             GameEnvUtils.sendToAgentHandToCount(this, agName, lastValueList);
+            }
             //         try {
             // // Attendi per 2 secondi (2000 millisecondi)
             // Thread.sleep(2000);
@@ -122,6 +126,10 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
             GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getDealer().hand.stream().map(Card::getValue)
                                 .collect(Collectors.toList()));
+            if(!"waysmarterplayer".equals(agName) && !"smartplayer".equals(agName)){
+                GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
+                                .collect(Collectors.toList()));
+            }
             // this.logger.log(Level.INFO, "Percepts: " + this.getPercepts(agName));
             // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             return true;

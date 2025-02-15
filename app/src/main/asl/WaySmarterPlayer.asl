@@ -170,6 +170,7 @@ tied_games(0).
 //Jackpot si incassa
 +!decide_action(V, C) : V == 21 <- 
 	.print("BlackJack!!! ", V);
+	stand;
 	-state(_);
 	+state(start);
 	!win;

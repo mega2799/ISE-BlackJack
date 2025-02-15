@@ -64,7 +64,7 @@ public class GameEnvUtils {
         for (final Integer card : cardValues) {
             cardList.add(new NumberTermImpl(card));
         }
-        twentyOneEnvironment.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
+        twentyOneEnvironment.addPercept(Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
     }
 
      public static Object findMode(final List<Object> list) {
