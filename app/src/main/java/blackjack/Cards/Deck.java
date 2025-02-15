@@ -1,15 +1,21 @@
 package blackjack.Cards;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
+
+import blackjack.EventListener;
 
 /**
  * Represents a shuffled Deck of playing Cards.
  *
  * @author David Winter
  */
-public class Deck extends Stack<Card>
+public class Deck extends Stack<Card> implements  EventListener
 {
+        private final List<EventListener> listeners = new ArrayList<>();
+
     /**
      * The number of Card Packs used for this Deck.
      */
@@ -85,6 +91,7 @@ public class Deck extends Stack<Card>
     {
         if (this.empty())
         {
+            this.notifyListeners("Deck");
             System.out.println("Run out of cards. New Deck.");
             for (int i = 0; i < this.numberOfPacks; i++)
             {
@@ -95,5 +102,23 @@ public class Deck extends Stack<Card>
         }
         
         return this.pop();
+    }
+ public void addListener(final EventListener listener) {
+        this.listeners.add(listener);
+    }
+
+    public void removeListener(final EventListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    private void notifyListeners(final String message) {
+        for (final EventListener listener : this.listeners) {
+            listener.onEvent(message);
+        }
+    }
+    @Override
+    public void onEvent(final String message) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'onEvent'");
     }
 }

@@ -44,40 +44,18 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 //********************************************************************* Conteggio carte ********************************************************************* */
 
-+reset_card_count <- 
-    !debug_print(["Resetto il conteggio delle carte."]);
-    -card_count(_);
-    +card_count(0).
++tell_cards([]) <- !debug_print(["Nessuna carta da aggiornare."]).
 
-+cards_seen(List)[source(Sender)] <- 
-    .print("Messaggio ricevuto da ", Sender, ": aggiungo alle carte lette:", List);
-    +update_counts(List).
-
-+update_counts([]) <- !debug_print(["Nessuna carta da aggiornare."]).
-
-+update_counts([H|T]) <-
-    !debug_print(["Aggiorno il conteggio per la carta: ", H]);
-    ?card_count(C);
-    if (H >= 2 & H <= 6) { NewCount = C + 1 };
-    if (H >= 7 & H <= 9) { NewCount = C + 0 };
-    if (H >= 10 | H == 1) { NewCount = C - 1 };
-    !debug_print(["Vecchio conteggio: ", C]);
-    !debug_print(["Nuovo conteggio: ", NewCount]);
-    -card_count(C);
-    +card_count(NewCount);
-    +update_counts(T).
++tell_cards([H|T]) <-
+	!debug_print(["Informo il player della la carta: ", H]);
+	// ?card_count(C);
+    !send_message(gamblerhilo, cards_seen([H]));
+	+tell_cards(T).
 
 
-// Strategia di puntata basata sul conteggio
-+!decide_bet <-
-    !debug_print(["Decido la puntata......."]);
-    ?card_count(C);
-    !debug_print(["C vale: ", C]);
-    if ( C > 2 ) { !debug_print(["Punto: ", 100]); bet(100) } 
-    if ( C < -1 ) { !debug_print(["Punto: ", 10]); bet(10) } 
-    if ( C <= 2 & C >= -1 ) { !debug_print(["Punto: ", 25]); bet(25)}.
-    // !debug_print(["Punto: ", Bet]);
-    // bet(Bet).
++!send_message(Receiver, Content) <- 
+    .send(Receiver, tell, Content).
+
 
 //********************************************************************* Gambler hand manage ********************************************************************* */
 
@@ -93,7 +71,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
     !decide_action(V, C).
 
 // chiedo carta soltanto se sicuro prenderla 
-+!decide_action(V, C) : V < (18 - C) & V < 21 <- 
++!decide_action(V, C) :  V < (18 - C) <- 
     !debug_print(["Valore mano: ", V, " | Card Count: ", C, " => Chiedo carta!"]);
     !ask_card.
 
@@ -101,9 +79,9 @@ card_count(0).  // Iniziamo con un conteggio di 0
 +!decide_action(V, C) : V >= (18 - C) & V < 21 <- 
     !debug_print(["Valore mano: ", V, " | Card Count: ", C, " => Mi fermo!"]);
     stand; 
-    !tick;
-    end_game;
     !debug_print(["###################### Done ######################"]);
+    -hand_value(V);
+    +hand_value(0);
     !tick;
     !start_play.
 
@@ -111,18 +89,18 @@ card_count(0).  // Iniziamo con un conteggio di 0
 +!decide_action(V, C) : V == 21 <- 
     !debug_print(["BlackJack!!! ", V]);
     stand;
-    !tick;
-    // end_game;
     !debug_print(["###################### Done ######################"]);
+    -hand_value(V);
+    +hand_value(0);
     !tick;
     !start_play.
 
 // ho perso
 +!decide_action(V, C) : V > 21 <- 
     !debug_print(["Ho perso la fresca"]);
-    !tick;
-    end_game;
     !debug_print(["###################### Done ######################"]);
+    -hand_value(V);
+    +hand_value(0);
     !tick;
     !start_play.
 
@@ -135,9 +113,9 @@ card_count(0).  // Iniziamo con un conteggio di 0
 
 +!start_play: true <-
     !debug_print(["Inizio partita."]);
-    !decide_bet;
-    !tick;
-    deal;
-    !tick;
-    check_hand_value.
+    // !decide_bet;
+    !tick.
+    // deal;
+    // !tick;
+    // check_hand_value.
 
