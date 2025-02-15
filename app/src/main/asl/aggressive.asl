@@ -21,6 +21,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
     // ?card_count(C);
 
 +suggest_bet <-  
+
     ?card_count(C);
     .print("Card  count vale: ", C);
     Bet = 100;  // Puntata alta

@@ -19,7 +19,7 @@ card_count(0).  // Iniziamo con un conteggio di 0
 	// +updating_card_count(false).
     // ?card_count(C);
 
-+suggest_bet <-  
++suggest_bet(G) <-  
     ?card_count(C);
     .print("Card  count vale: ", C);
     if (C > 2) { Bet = 100; Stop = 19 }  // Conteggio alto → più aggressivo

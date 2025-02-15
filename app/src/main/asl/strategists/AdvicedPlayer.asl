@@ -2,7 +2,7 @@
 
 //Belief iniziali
 state(start).
-game(1).
+game(2).
 card_count(0).  // Iniziamo con un conteggio di 0
 winned_games(0).
 lost_games(0).
@@ -52,12 +52,13 @@ stopping_score(21).
 +!decide_bet <-
 	.print("Chiedo consiglio per la puntata");
 	// ?card_count(C);
-    .broadcast(tell, suggest_bet);  // Chiede suggerimenti
+	?game(G);
+    .broadcast(tell, suggest_bet(G));  // Chiede suggerimenti
     // .wait(broadcast(tell, suggest_bet));  // Aspetta risposte
 	// .send(strategist, tell, suggest_bet);
 	// .send(aggressive, tell, suggest_bet);
 	// .send(adaptivestrategist, tell, suggest_bet);
-	.wait(3000);
+	.wait(4000);
 
     !aggregate_bets.
     // ?card_count(C);
@@ -68,7 +69,7 @@ stopping_score(21).
 
 +suggested_bet(Bet, Stop) <- 
     .print("Ricevuto suggerimento: Punto ", Bet, " - Stop a ", Stop);
-    +bet_suggestion(Bet, Stop). 
+    -+bet_suggestion(Bet, Stop). 
 
 
 
@@ -76,11 +77,7 @@ stopping_score(21).
     .findall(B, bet_suggestion(B, _), Bets);
     .findall(S, bet_suggestion(_, S), Stops);
     
-    // MostCommonBetList = mode(Bets);
-    // MostCommonStopList = mode(Stops);
 
-	// .java("env.GameEnvUtils", "findMode", Bets, MostCommonBet );
-	// .java("env.GameEnvUtils", "findMode", Stops, MostCommonStop  );
     // MostCommonBet = head(MostCommonBetList);
     // MostCommonStop = head(MostCommonStopList);
 	.print("Bets: ", Bets);
@@ -88,8 +85,10 @@ stopping_score(21).
 	//TODO ora prende il primo elemento della lista, ma bisogna fare la moda
 	.nth(0, Bets, MostCommonBet);
 	.nth(0, Stops, MostCommonStop);
-	-stopping_score(_);
-	+stopping_score(MostCommonStop);
+	//TODO test online
+	-+stopping_score(MostCommonStop);
+	// -stopping_score(_);
+	// +stopping_score(MostCommonStop);
     .print("Decisione finale: Punto ", MostCommonBet, " e mi fermo a ", MostCommonStop);
     bet(MostCommonBet).
 
@@ -106,7 +105,7 @@ stopping_score(21).
 	.wait(3000); // Aspetta che tutti abbiano contato le loro carte
 	clear;
 	// -bet_suggestion(_, _);
-	-suggested_bet(_, _);
+	// -suggested_bet(_, _);
 	?game(C);
 	if(C > 0){
 		!tick;
@@ -137,11 +136,6 @@ stopping_score(21).
 	} else {
 		.print("Game Over");
 	}.
-
-//********************************************************************* Card count ********************************************************************* */
-
-
-
 
 //********************************************************************* Gambler hand manage ********************************************************************* */
 

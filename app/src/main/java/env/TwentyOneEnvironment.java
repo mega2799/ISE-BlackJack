@@ -78,6 +78,7 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_score(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
             this.removePerceptsByUnif(Literal.parseLiteral("update_counts(_)"));
+            // this.removePerceptsByUnif(Literal.parseLiteral("suggested_bet(_)"));
             return true;
         }
         if ("deal".equals(act)) {
