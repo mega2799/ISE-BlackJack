@@ -2,7 +2,7 @@
 
 //Belief iniziali
 state(start).
-game(2).
+game(50).
 card_count(0).  // Iniziamo con un conteggio di 0
 winned_games(0).
 lost_games(0).

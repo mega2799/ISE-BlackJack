@@ -2,7 +2,7 @@
 
 //Belief iniziali
 state(start).
-game(2).
+game(50).
 card_count(0).
 winned_games(0).
 lost_games(0).
@@ -10,7 +10,6 @@ tied_games(0).
 
 
 stopping_score(21).
-
 
 !start.
 
@@ -53,19 +52,28 @@ stopping_score(21).
 	.print("Chiedo consiglio per la puntata");
 	// ?card_count(C);
 	?game(G);
-	+consensuos(0);
-    .broadcast(tell, suggest_bet(G));  // Chiede suggerimenti
-	.wait(consensuos(3));
-	-+consensuos(0);
+	// +consensuos(0);
+	.send(hilo, askOne, suggest_bet(_),  X);
+	.print(X);
+	!X;
+	.send(omega2, askOne, suggest_bet(_), Omega2Response);
+	.print(Omega2Response);
+	!Omega2Response;
+	.send(zencount, askOne, suggest_bet(_), ZencountResponse);
+	.print(ZencountResponse);
+	!ZencountResponse;
     !aggregate_bets.
-    // ?card_count(C);
 
-+suggested_bet(Bet, Stop)[source(Sender)] : consensuos(X) <- 
-	// -+consensuos(X + 1);
-	-consensuos(X);
-	+consensuos(X + 1);
+
++!suggest_bet(List)[source(Sender)]  <- 
+	.nth(0, List, Bet);
+	.nth(1, List, Stop);
+    .print("Ricevuto suggerimento da:  ", Sender, " : Punto ", Bet, " - Stop a ", Stop);
+    +bet_suggestion(Bet, Stop). 
+
++suggested_bet(Bet, Stop)[source(self)]  <- 
     .print("Ricevuto suggerimento da ", Sender ,": Punto ", Bet, " - Stop a ", Stop, " N suggerimenti: ", X);
-    -+bet_suggestion(Bet, Stop). 
+    +bet_suggestion(Bet, Stop). 
 
 
 
@@ -84,6 +92,9 @@ stopping_score(21).
     .print("Decisione finale: Punto ", MostCommonBet, " e mi fermo a ", MostCommonStop);
     bet(MostCommonBet).
 
+-!aggregate_bets <- 
+	.print("Nessun suggerimento ricevuto");
+	bet(25).
 
 //********************************************************************* CORE ********************************************************************* */
 

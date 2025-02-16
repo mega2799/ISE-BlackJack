@@ -19,7 +19,7 @@ card_count(0).
     };
 	.print("Fine conteggio").
 
-+suggest_bet(G) <-  
++?suggest_bet(G) <-  
     ?card_count(C);
     .wait(400);
     .print("Card  count vale: ", C);
@@ -27,6 +27,6 @@ card_count(0).
     if (C < -1) { Bet = 10; Stop = 16 }  // Conteggio basso → più prudente
     if (C >= -1 & C <= 2) { Bet = 25; Stop = 18 }  // Conteggio medio → moderato
     .print("Suggerisco di puntare: ", Bet, " e di fermarsi a: ", Stop);
-    .send(advicedPlayer, tell, suggested_bet(Bet, Stop)).
+    G = [Bet, Stop].
 
 

@@ -2,7 +2,7 @@
 
 //Belief iniziali
 state(start).
-game(1).
+game(50).
 
 !start.
 
