@@ -1,8 +1,11 @@
+
 # ISE-BlackJack
+
+![Copertina](https://github.com/mega2799/ISE-BlackJack/blob/main/album.jpg)
 
 ![Stato Build](https://img.shields.io/github/actions/workflow/status/mega2799/ISE-BlackJack/build.yml)
 ![Licenza](https://img.shields.io/github/license/mega2799/ISE-BlackJack)
-![Copertina](https://github.com/mega2799/ISE-BlackJack/blob/main/asset/album.jpg)
+
 ## Descrizione
 
 **ISE-BlackJack** è un progetto che unisce il classico gioco del BlackJack con un'implementazione avanzata basata su **sistemi multi-agente (MAS)** e **agenti BDI (Belief-Desire-Intention)**. Il progetto utilizza **Jason AgentSpeak**, un linguaggio specifico per la programmazione di agenti intelligenti, per modellare il comportamento del banco e del giocatore in un ambiente simulato.
