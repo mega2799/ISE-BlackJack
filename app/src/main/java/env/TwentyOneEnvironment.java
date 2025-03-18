@@ -1,5 +1,6 @@
 package env;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,15 +12,15 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import blackjack.AppWindow;
-import blackjack.Cards.Card;
 import blackjack.EventListener;
 import blackjack.GameCommand;
 import blackjack.GamePanel;
+import blackjack.Cards.Card;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
 
-public class TwentyOneEnvironment extends Environment implements EventListener {
+public class TwentyOneEnvironment extends Environment  {
    static final Logger logger = Logger.getLogger(TwentyOneEnvironment.class.getName());
     private AppWindow appWindow;
     private GamePanel gamePanel;
@@ -44,7 +45,6 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
         this.beatufiySwing();
         this.appWindow = new AppWindow(args.length > 0 ? Double.parseDouble(args[0]) : 1000);
         this.gamePanel = this.appWindow.getGamePanel();
-        this.gamePanel.addListener(this);
         
         logger.info("Inizializzazione completata.");
         // this.addPercept(Literal.parseLiteral("start"));
@@ -76,20 +76,23 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_busted(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("dealer_score(_)"));
             this.removePerceptsByUnif(agName, Literal.parseLiteral("hand_value(_)"));
-            this.removePerceptsByUnif(agName, Literal.parseLiteral("update_counts(_)"));
+            this.removePerceptsByUnif(Literal.parseLiteral("update_counts(_)"));
             return true;
         }
         if ("deal".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.DEAL);
             //non dovbrebbe essere possibile bustare al deal...... quindi aggiorno le carte
             GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            if("waysmarterplayer".equals(agName) || "smartplayer".equals(agName)){
             GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getPlayer().hand.stream().map(Card::getValue)
                             .collect(Collectors.toList()));
+            }
             return true;
         }
         if ("hit".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.HIT);
             GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            if("waysmarterplayer".equals(agName) || "smartplayer".equals(agName)){
             // Conto la carta che ho appena pescato
             final List<Integer> values = this.gamePanel.getPlayer().hand.stream()
                     .map(Card::getValue)
@@ -97,44 +100,37 @@ public class TwentyOneEnvironment extends Environment implements EventListener {
             final Integer lastValue = values.isEmpty() ? null : values.get(values.size() - 1);
             final List<Integer> lastValueList = lastValue != null ? List.of(lastValue) : List.of();
             GameEnvUtils.sendToAgentHandToCount(this, agName, lastValueList);
-            //         try {
-            // // Attendi per 2 secondi (2000 millisecondi)
-            // Thread.sleep(2000);
-            // this.logger.log(Level.INFO, "Woke up after 2 seconds!");
-            //         } catch (final InterruptedException e) {
-            //             e.printStackTrace();
-            //         }
-
-            // GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
-            // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            }
             return true;
         }
         if ("bust".equals(act)) {
+            final List<Integer> cardSeenValues = new ArrayList<>();
             // Conto le carte del dealer 
-            GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getDealer().hand.stream()
-                    .map(Card::getValue)
-                    .collect(Collectors.toList()));
+            cardSeenValues.addAll(this.gamePanel.getDealer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
+            if(!"waysmarterplayer".equals(agName) && !"smartplayer".equals(agName)){
+                //aggiungo anche le carte del giocatore a fine mano
+                cardSeenValues.addAll(this.gamePanel.getPlayer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
+            }
+            GameEnvUtils.sendToAgentHandToCount(this, agName, cardSeenValues);
+
             return true;
         }
         if("stand".equals(act)) {
             this.appWindow.actionPerformed(GameCommand.STAND);
-            // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
             GameEnvUtils.checkBusted(this, agName, this.gamePanel.getDealer());
-            GameEnvUtils.sendToAgentHandToCount(this, agName, this.gamePanel.getDealer().hand.stream().map(Card::getValue)
-                                .collect(Collectors.toList()));
-            // this.logger.log(Level.INFO, "Percepts: " + this.getPercepts(agName));
-            // GameEnvUtils.sendToAgentCards(this, agName, this.gamePanel);
+            //! Al posto di inviare 2 messaggi con liste diverse e creare problemi di sincronizzazione invio un solo messaggio con tutte le carte viste....
+            final List<Integer> cardSeenValues = new ArrayList<>();
+            // aggiunto le carte del dealer
+            cardSeenValues.addAll(this.gamePanel.getDealer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
+            if(!"waysmarterplayer".equals(agName) && !"smartplayer".equals(agName)){
+                //aggiungo anche le carte del giocatore a fine mano
+                cardSeenValues.addAll(this.gamePanel.getPlayer().hand.stream().map(Card::getValue).collect(Collectors.toList()));
+            }
+            GameEnvUtils.sendToAgentHandToCount(this, agName, cardSeenValues);
             return true;
         }
 
         return false;
     }
-
-	@Override
-	public void onEvent(final String message) {
-        // if("player_card".equals(message)){
-        //     this.logger.log(Level.INFO, "Aggiorno le carte del giocatore");
-        // }
-	}
 
 }

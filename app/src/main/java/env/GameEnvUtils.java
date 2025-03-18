@@ -1,5 +1,10 @@
 package env;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +69,10 @@ public class GameEnvUtils {
         for (final Integer card : cardValues) {
             cardList.add(new NumberTermImpl(card));
         }
-        twentyOneEnvironment.addPercept(agName, Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
+        twentyOneEnvironment.addPercept(Literal.parseLiteral("update_counts(" + cardList.toString() + ")"));
     }
 
-     public static Object findMode(final List<Object> list) {
+    public static Object findMode(final List<Object> list) {
         logger.log(Level.INFO, "Calcolo della moda della lista: " + list);
         final Map<Object, Integer> freqMap = new HashMap<>();
         int maxCount = 0;
@@ -84,4 +89,32 @@ public class GameEnvUtils {
         return mode;
     }
 
+     private static final String FILE_PATH = "beliefs.txt"; // Nome file per i belief
+
+    // Salva un belief su file
+    public static void saveBelief(final String belief, final String value) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
+            writer.write(belief + "=" + value);
+            writer.newLine();
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Carica tutti i belief dal file
+    public static Map<String, String> loadBeliefs() {
+        final Map<String, String> beliefs = new HashMap<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                final String[] parts = line.split("=");
+                if (parts.length == 2) {
+                    beliefs.put(parts[0], parts[1]);
+                }
+            }
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+        return beliefs;
+    }
 }

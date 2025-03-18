@@ -44,6 +44,7 @@ public class GamePanel extends JPanel implements EventListener{
     }
 
     private final List<EventListener> listeners = new ArrayList<>();
+    final BlackjackStatsRecorder recorder;
 
 
     // Bottoni per il gioco
@@ -139,7 +140,8 @@ public class GamePanel extends JPanel implements EventListener{
         this.dealer.addListener(this);
         this.player = new Player("Kevin Spacey", 66, "Male");
         this.player.setWallet(walletAmount);
-
+        // this.recorder = new BlackjackStatsRecorder("statistics/blackjack_stats.csv", walletAmount);
+        this.recorder = new BlackjackStatsRecorder("statistics/blackjack_stats.csv");
         // Aggiungi i listener tramite lambda expressions
         this.newGameButton.addActionListener(e -> {
             this.newGame();
@@ -355,5 +357,22 @@ public class GamePanel extends JPanel implements EventListener{
     @Override
     public void onEvent(final String message) {
             this.notifyListeners(message);
+            if (message.contains("win")) {
+                System.out.println("Notifier: Player wins!");
+                System.out.println(message);
+                this.recorder.recordWin("".equals(message.split("win_")[1]) ? 0 : Double.parseDouble(message.split("win_")[1]
+                ));
+            }
+            if (message.contains("lose")) {
+                System.out.println("Notifier: Player loses!");
+                System.out.println(message);   
+                this.recorder.recordLoss("".equals(message.split("lose_")[1]) ? 0 : Double.parseDouble(message.split("lose_")[1]
+                ));
+            }
+            if (message.contains("tie")) {
+                System.out.println("Notifier: Player tied!");
+                System.out.println(message);
+                this.recorder.recordTie();
+            }
     }
 }

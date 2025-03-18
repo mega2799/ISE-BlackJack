@@ -133,7 +133,7 @@ public class Player extends BlackjackPlayer implements Serializable
     public void wins(final double amount)
     {
         
-            this.logger.log(Level.INFO, "Player " + this.getName() + " won " + amount);
+        this.logger.log(Level.INFO, "Player " + this.getName() + " won " + amount);
         this.wallet += amount;
         this.bet = 0.0;
     }

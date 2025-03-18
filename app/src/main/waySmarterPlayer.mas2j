@@ -2,10 +2,13 @@ MAS waysmarterplayer {
 
 	infrastructure: Centralised // no distribution, the whole MAS runs in the same host
 
-	environment: env.TwentyOneEnvironment(1000, 1) // (fresca, debug)
+	environment: env.TwentyOneEnvironment(2800, 1) // (fresca, debug)
 
 	agents:
 		waysmarterplayer  waysmarterplayer;
+
+	classpath:
+		"bin";
 
 	aslSourcePath:
 		"src/main/asl";

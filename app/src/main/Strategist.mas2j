@@ -6,10 +6,10 @@ MAS strategistplayers {
 
 	agents:
 		advicedPlayer  advicedPlayer;
-		strategist  strategist;
-		aggressive aggressive;
-		adaptivestrategist adaptivestrategist;
+		hilo hilo;
+		omega2 omega2;
+		zencount zencount;
 
 	aslSourcePath:
-		"src/main/asl";
+		"src/main/asl/strategists";
 }

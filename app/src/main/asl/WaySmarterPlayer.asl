@@ -2,7 +2,7 @@
 
 //Belief iniziali
 state(start).
-game(2).
+game(50).
 card_count(0).  // Iniziamo con un conteggio di 0
 winned_games(0).
 lost_games(0).
@@ -170,6 +170,7 @@ tied_games(0).
 //Jackpot si incassa
 +!decide_action(V, C) : V == 21 <- 
 	.print("BlackJack!!! ", V);
+	stand;
 	-state(_);
 	+state(start);
 	!win;
