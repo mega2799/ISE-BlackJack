@@ -178,6 +178,7 @@ public class Dealer extends BlackjackPlayer implements EventListener
         if (player.hand.isBust())
         {
             this.say(player.getName() + " busts. Loses $" + player.getBet());
+            this.notifyListeners("lose_"+ player.getBet());
             player.loses();
             this.gameOver = true;
         }
@@ -245,6 +246,7 @@ public class Dealer extends BlackjackPlayer implements EventListener
             {
                 this.say(this.getName() + " is BUST");
                 this.notifyListeners("dealer_bust");
+                this.notifyListeners("win_" + player.getBet() * 2);
             }
             else
             {
@@ -254,6 +256,7 @@ public class Dealer extends BlackjackPlayer implements EventListener
         else
         {
             this.say(this.getName() + " has BLACKJACK!");
+            this.notifyListeners("lose_"+ player.getBet());
         }
         
         if (this.hand.hasBlackjack() && player.hand.hasBlackjack())
@@ -270,26 +273,31 @@ public class Dealer extends BlackjackPlayer implements EventListener
         else if (this.hand.hasBlackjack())
         {
             this.say("Dealer has Blackjack. " + player.getName() + " loses $" + player.getBet());
+            this.notifyListeners("lose_"+ player.getBet());
             player.loses();
         }
         else if (this.hand.isBust())
         {
             this.say("Dealer is bust. " + player.getName() + " wins $" + player.getBet());
+            this.notifyListeners("win_" + player.getBet() * 2);
             player.wins(player.getBet() * 2);
         }
         else if (player.hand.getTotal() == this.hand.getTotal())
         {
             this.say("Push");
+            this.notifyListeners("tie");
             player.clearBet();
         }
         else if (player.hand.getTotal() < this.hand.getTotal())
         {
             this.say(player.getName() + " loses $" + player.getBet());
+            this.notifyListeners("lose_"+ player.getBet());
             player.loses();
         }
         else if (player.hand.getTotal() > this.hand.getTotal())
         {
             this.say(player.getName() + " wins $" + player.getBet());
+            this.notifyListeners("win_" + player.getBet() * 2);
             player.wins(player.getBet() * 2);
         }
         

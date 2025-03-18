@@ -2,7 +2,7 @@
 
 //Belief iniziali
 state(start).
-game(1).
+game(50).
 
 !start.
 
@@ -105,6 +105,7 @@ game(1).
 //Jackpot si incassa
 +!decide_action(V, C) : V == 21 <- 
 	.print("BlackJack!!! ", V);
+	stand;
 	-state(_);
 	+state(start);
 	!start.
